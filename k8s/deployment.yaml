@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-ventas
+  labels:
+    app: backend-ventas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-ventas
+  template:
+    metadata:
+      labels:
+        app: backend-ventas
+    spec:
+      containers:
+        - name: backend-ventas
+          image: gcr.io/construtem/backend-ventas:latest
+          ports:
+            - containerPort: 8080
