@@ -1,0 +1,60 @@
+package database
+
+import (
+	"backend-ventas/api/models"
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	_ "github.com/joho/godotenv/autoload" // Carga automática del archivo .env
+	"gorm.io/driver/postgres"             // Driver de PostgreSQL
+	"gorm.io/gorm"                        // ORM de GORM
+)
+
+var DB *gorm.DB // Variable global para tu instancia de DB
+
+func InitDB() {
+	dbHost := os.Getenv("DB_HOST")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbPort := os.Getenv("DB_PORT")
+	dbSSLMode := os.Getenv("DB_SSLMODE") // 'disable' para dev, 'require'/'verify-full' para prod
+
+	if dbHost == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbPort == "" {
+		log.Fatal("Error: Una o más variables de entorno de la base de datos no están configuradas.")
+	}
+
+	// Cadena de conexión (DSN)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+		dbHost, dbUser, dbPassword, dbName, dbPort, dbSSLMode)
+
+	var err error
+	// Intentar abrir la conexión a la base de datos con reintentos
+	const maxRetries = 10 // Número máximo de intentos
+	for i := 0; i < maxRetries; i++ {
+		DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			// Si la conexión fue exitosa, salimos del bucle
+			break
+		}
+		// Si falló, logueamos el error y esperamos antes de reintentar
+		log.Printf("Intento %d/%d: Fallo al conectar a la base de datos: %v. Reintentando en 2 segundos...", i+1, maxRetries, err)
+		time.Sleep(2 * time.Second) // Espera 2 segundos antes del siguiente intento
+	}
+
+	// Después de todos los reintentos, si `err` todavía no es `nil`, significa que no se pudo conectar.
+	if err != nil {
+		log.Fatalf("Fallo CRÍTICO: No se pudo conectar a la base de datos después de %d intentos: %v", maxRetries, err)
+	}
+	// Si llegamos aquí, la conexión fue exitosa
+
+	log.Println("Conexión a la base de datos establecida exitosamente.")
+
+	// ¡IMPORTANTE! Realizar migraciones automáticas aquí (crea/actualiza tablas)
+	if err := DB.AutoMigrate(&models.Usuario{}, &models.Rol{}, &models.Ubicacion{}); err != nil {
+		log.Fatalf("Fallo al migrar la base de datos: %v", err)
+	}
+	log.Println("Migraciones de base de datos completadas.")
+}
