@@ -1,0 +1,286 @@
+# Documentación de la API de Ventas y Carrito
+
+Esta documentación describe los endpoints disponibles para interactuar con la API de ventas y carritos de compras.
+
+**URL Base:** `http://localhost:8080/api/v1` (o `http://localhost:8080` si no usaste el prefijo `/api/v1`)
+
+---
+
+## 1. Carritos de Compras
+
+Permite gestionar los carritos de compras, añadir y manipular ítems dentro de ellos.
+
+### 1.1. Crear un Nuevo Carrito
+
+Crea una nueva instancia de carrito de compras.
+
+* **Endpoint:** `/carritos`
+* **Método:** `POST`
+* **Descripción:** Inicializa un nuevo carrito de compras con un estado "ABIERTO". La fecha se establece automáticamente al momento de la creación.
+* **Cuerpo de la Solicitud (JSON):**
+    ```json
+    {
+      "id_usuario": 1,    // Opcional: ID del usuario asociado al carrito
+      "id_cliente": 1     // Opcional: ID del cliente asociado al carrito
+      // "fecha": "2025-06-07T10:00:00Z", // Opcional: Se genera automáticamente si no se proporciona
+      // "estado": "ABIERTO"              // Opcional: Por defecto es "ABIERTO"
+    }
+    ```
+* **Respuestas:**
+    * **`201 Created`**
+        ```json
+        {
+          "id_carrito": 1,
+          "id_usuario": 1,
+          "id_cliente": 1,
+          "fecha": "2025-06-07T15:30:00.123456Z",
+          "estado": "ABIERTO",
+          "detalles": null
+        }
+        ```
+    * **`400 Bad Request`**: JSON de solicitud inválido.
+    * **`500 Internal Server Error`**: Error al crear el carrito en la base de datos.
+
+### 1.2. Obtener un Carrito por ID
+
+Recupera los detalles de un carrito de compras específico, incluyendo sus ítems.
+
+* **Endpoint:** `/carritos/:id`
+* **Método:** `GET`
+* **Parámetros de Ruta:**
+    * `:id` (entero): El ID único del carrito.
+* **Respuestas:**
+    * **`200 OK`**
+        ```json
+        {
+          "id_carrito": 1,
+          "id_usuario": 1,
+          "id_cliente": 1,
+          "fecha": "2025-06-07T15:30:00.123456Z",
+          "estado": "ABIERTO",
+          "detalles": [
+            {
+              "id_detalle_carrito": 1,
+              "id_carrito": 1,
+              "id_producto": 101,
+              "cantidad": 2,
+              "precio_unitario": 50.00,
+              "descuento_aplicado": 0.00
+            }
+          ]
+        }
+        ```
+    * **`400 Bad Request`**: ID de carrito inválido.
+    * **`404 Not Found`**: Carrito no encontrado.
+    * **`500 Internal Server Error`**: Error al obtener el carrito de la base de datos.
+
+### 1.3. Añadir Ítem al Carrito
+
+Agrega un producto a un carrito de compras existente. Si el producto ya está en el carrito, se actualiza la cantidad.
+
+* **Endpoint:** `/carritos/:id/items`
+* **Método:** `POST`
+* **Parámetros de Ruta:**
+    * `:id` (entero): El ID único del carrito al que se añadirá el ítem.
+* **Cuerpo de la Solicitud (JSON):**
+    ```json
+    {
+      "id_producto": 101,          // ID del producto
+      "cantidad": 2,               // Cantidad a añadir
+      "precio_unitario": 50.00,    // Precio unitario del producto (en el momento de la adición)
+      "descuento_aplicado": 0.00   // Descuento aplicado al producto (en el momento de la adición)
+    }
+    ```
+* **Respuestas:**
+    * **`201 Created`**: Si el ítem se añadió por primera vez.
+        ```json
+        {
+          "id_detalle_carrito": 2,
+          "id_carrito": 1,
+          "id_producto": 102,
+          "cantidad": 1,
+          "precio_unitario": 120.00,
+          "descuento_aplicado": 10.00
+        }
+        ```
+    * **`200 OK`**: Si la cantidad de un ítem existente fue actualizada.
+        ```json
+        {
+          "message": "Cantidad de producto actualizada en el carrito",
+          "id_detalle_carrito": 1,
+          "nueva_cantidad": 4
+        }
+        ```
+    * **`400 Bad Request`**: JSON de solicitud inválido, ID de carrito inválido, o el carrito no está en estado "ABIERTO".
+    * **`404 Not Found`**: Carrito no encontrado.
+    * **`500 Internal Server Error`**: Error al interactuar con la base de datos.
+
+### 1.4. Actualizar un Ítem en el Carrito
+
+Actualiza la cantidad, precio unitario o descuento de un ítem específico dentro de un carrito.
+
+* **Endpoint:** `/carritos/:id/items/:item_id`
+* **Método:** `PUT`
+* **Parámetros de Ruta:**
+    * `:id` (entero): El ID del carrito.
+    * `:item_id` (entero): El ID del detalle del ítem dentro del carrito (`id_detalle_carrito`).
+* **Cuerpo de la Solicitud (JSON):**
+    ```json
+    {
+      "cantidad": 3,               // Cantidad actualizada (opcional)
+      "precio_unitario": 55.00,    // Precio unitario actualizado (opcional)
+      "descuento_aplicado": 5.00   // Descuento aplicado actualizado (opcional)
+    }
+    ```
+    * Puedes enviar solo los campos que deseas actualizar.
+* **Respuestas:**
+    * **`200 OK`**
+        ```json
+        {
+          "message": "Ítem de carrito actualizado exitosamente"
+        }
+        ```
+    * **`400 Bad Request`**: JSON de solicitud inválido, IDs inválidos o no se proporcionan campos válidos para actualizar.
+    * **`404 Not Found`**: Ítem de carrito no encontrado en este carrito.
+    * **`500 Internal Server Error`**: Error al actualizar el ítem en la base de datos.
+
+### 1.5. Eliminar un Ítem del Carrito
+
+Elimina un ítem específico de un carrito de compras.
+
+* **Endpoint:** `/carritos/:id/items/:item_id`
+* **Método:** `DELETE`
+* **Parámetros de Ruta:**
+    * `:id` (entero): El ID del carrito.
+    * `:item_id` (entero): El ID del detalle del ítem dentro del carrito (`id_detalle_carrito`).
+* **Respuestas:**
+    * **`204 No Content`**: Ítem eliminado exitosamente.
+    * **`400 Bad Request`**: IDs inválidos.
+    * **`404 Not Found`**: Ítem de carrito no encontrado en este carrito.
+    * **`500 Internal Server Error`**: Error al eliminar el ítem de la base de datos.
+
+---
+
+## 2. Ventas
+
+Permite gestionar el historial de ventas, ver detalles y crear ventas a partir de carritos.
+
+### 2.1. Obtener Todas las Ventas
+
+Recupera una lista de todas las ventas registradas.
+
+* **Endpoint:** `/ventas`
+* **Método:** `GET`
+* **Respuestas:**
+    * **`200 OK`**
+        ```json
+        [
+          {
+            "id_venta": 1001,
+            "id_carrito": 1,
+            "fecha": "2025-06-07T16:00:00.123456Z",
+            "total": 150.00,
+            "estado": "COMPLETADO"
+          },
+          {
+            "id_venta": 1002,
+            "id_carrito": 2,
+            "fecha": "2025-06-08T10:30:00.123456Z",
+            "total": 300.50,
+            "estado": "PENDIENTE_PAGO"
+          }
+        ]
+        ```
+    * **`500 Internal Server Error`**: Error al obtener las ventas de la base de datos.
+
+### 2.2. Obtener una Venta por ID
+
+Recupera los detalles de una venta específica.
+
+* **Endpoint:** `/ventas/:id`
+* **Método:** `GET`
+* **Parámetros de Ruta:**
+    * `:id` (entero): El ID único de la venta.
+* **Respuestas:**
+    * **`200 OK`**
+        ```json
+        {
+          "id_venta": 1001,
+          "id_carrito": 1,
+          "fecha": "2025-06-07T16:00:00.123456Z",
+          "total": 150.00,
+          "estado": "COMPLETADO"
+        }
+        ```
+    * **`400 Bad Request`**: ID de venta inválido.
+    * **`404 Not Found`**: Venta no encontrada.
+    * **`500 Internal Server Error`**: Error al obtener la venta de la base de datos.
+
+### 2.3. Crear una Venta a partir de un Carrito
+
+Genera una nueva venta a partir de un carrito de compras existente y lo marca como "COMPLETADO".
+
+* **Endpoint:** `/ventas`
+* **Método:** `POST`
+* **Descripción:** Este proceso es transaccional: calcula el total del carrito, crea la venta y actualiza el estado del carrito a "COMPLETADO".
+* **Cuerpo de la Solicitud (JSON):**
+    ```json
+    {
+      "id_carrito": 123 // El ID del carrito de compras que se convertirá en venta
+    }
+    ```
+* **Respuestas:**
+    * **`201 Created`**
+        ```json
+        {
+          "message": "Venta creada exitosamente",
+          "id_venta": 1003,
+          "total_venta": 250.75
+        }
+        ```
+    * **`400 Bad Request`**: JSON de solicitud inválido, el carrito no está en un estado válido (ej. "ABIERTO") o el carrito está vacío.
+    * **`404 Not Found`**: Carrito no encontrado.
+    * **`500 Internal Server Error`**: Error al crear la venta o al actualizar el carrito en la base de datos.
+
+### 2.4. Actualizar una Venta Existente
+
+Modifica el estado o el total de una venta existente.
+
+* **Endpoint:** `/ventas/:id`
+* **Método:** `PUT`
+* **Parámetros de Ruta:**
+    * `:id` (entero): El ID único de la venta a actualizar.
+* **Cuerpo de la Solicitud (JSON):**
+    ```json
+    {
+      "total": 160.00,      // Opcional: Nuevo total de la venta
+      "estado": "PAGADO"    // Opcional: Nuevo estado de la venta (ej. "PENDIENTE_PAGO", "PAGADO", "CANCELADO")
+    }
+    ```
+    * Puedes enviar solo los campos que deseas actualizar.
+* **Respuestas:**
+    * **`200 OK`**
+        ```json
+        {
+          "message": "Venta actualizada exitosamente"
+        }
+        ```
+    * **`400 Bad Request`**: JSON de solicitud inválido, ID de venta inválido o no se proporcionan campos válidos para actualizar.
+    * **`404 Not Found`**: Venta no encontrada.
+    * **`500 Internal Server Error`**: Error al actualizar la venta en la base de datos.
+
+### 2.5. Eliminar una Venta
+
+Elimina una venta específica de la base de datos.
+
+* **Endpoint:** `/ventas/:id`
+* **Método:** `DELETE`
+* **Parámetros de Ruta:**
+    * `:id` (entero): El ID único de la venta a eliminar.
+* **Respuestas:**
+    * **`204 No Content`**: Venta eliminada exitosamente.
+    * **`400 Bad Request`**: ID de venta inválido.
+    * **`404 Not Found`**: Venta no encontrada para eliminar.
+    * **`500 Internal Server Error`**: Error al eliminar la venta de la base de datos.
+
+---

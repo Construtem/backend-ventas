@@ -1,7 +1,7 @@
 package database
 
 import (
-	"backend-ventas/api/models"
+	// <--- Importación de tus modelos
 	"fmt"
 	"log"
 	"os"
@@ -14,6 +14,7 @@ import (
 
 var DB *gorm.DB // Variable global para tu instancia de DB
 
+// InitDB inicializa la conexión a la base de datos PostgreSQL
 func InitDB() {
 	dbHost := os.Getenv("DB_HOST")
 	dbUser := os.Getenv("DB_USER")
@@ -53,8 +54,33 @@ func InitDB() {
 	log.Println("Conexión a la base de datos establecida exitosamente.")
 
 	// ¡IMPORTANTE! Realizar migraciones automáticas aquí (crea/actualiza tablas)
-	if err := DB.AutoMigrate(&models.Usuario{}, &models.Rol{}, &models.Ubicacion{}); err != nil {
-		log.Fatalf("Fallo al migrar la base de datos: %v", err)
+	// Añadir tus modelos de Ventas y Carrito aquí para que GORM los migre
+	// if err := DB.AutoMigrate(
+	// 	&models.Usuario{},
+	// 	&models.Rol{},
+	// 	&models.Ubicacion{},
+	// 	&models.Venta{},          // <-- Añadir el modelo Venta
+	// 	&models.CarritoCompras{}, // <-- Añadir el modelo CarritoCompras
+	// 	&models.DetalleCarrito{}, // <-- Añadir el modelo DetalleCarrito
+	// 	// Si tienes otros modelos como Cliente, Producto, etc., añádelos aquí también:
+	// 	// &models.Cliente{},
+	// 	// &models.Producto{},
+	// 	// &models.LOVUniversal{},
+	// ); err != nil {
+	// 	log.Fatalf("Fallo al migrar la base de datos: %v", err)
+	// }
+	// log.Println("Migraciones de base de datos completadas.")
+}
+
+// CloseDB cierra la conexión a la base de datos subyacente de GORM
+func CloseDB() {
+	if DB != nil {
+		sqlDB, err := DB.DB()
+		if err != nil {
+			log.Printf("Error obteniendo *sql.DB de GORM: %v", err)
+		} else {
+			sqlDB.Close()
+			log.Println("Conexión a PostgreSQL (GORM) cerrada.")
+		}
 	}
-	log.Println("Migraciones de base de datos completadas.")
 }
