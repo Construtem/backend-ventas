@@ -62,7 +62,6 @@ func MapProductoToDetalleDTO(producto models.Producto) *dtos.ProductoDetalleResp
 		return nil
 	}
 	return &dtos.ProductoDetalleResponse{
-		ID:          producto.ID,
 		Codigo:      producto.Codigo,
 		Nombre:      producto.Nombre,
 		Descripcion: producto.Descripcion,
@@ -73,7 +72,6 @@ func MapProductoToDetalleDTO(producto models.Producto) *dtos.ProductoDetalleResp
 // Helper para mapear models.DetalleCotizacion a dtos.DetalleCotizacionResponse
 func MapDetalleCotizacionToDTO(detalle models.DetalleCotizacion) dtos.DetalleCotizacionResponse {
 	return dtos.DetalleCotizacionResponse{
-		CotizacionID:   detalle.CotizacionID,
 		ProductoID:     detalle.ProductoID,
 		Cantidad:       detalle.Cantidad,
 		PrecioUnitario: detalle.PrecioUnitario,
@@ -81,11 +79,25 @@ func MapDetalleCotizacionToDTO(detalle models.DetalleCotizacion) dtos.DetalleCot
 	}
 }
 
+// Helper para mapear models.DetalleCotizacion a dtos.ProductoSimplificadoResponse
+func MapDetalleToProductoSimplificado(detalle models.DetalleCotizacion) dtos.ProductoSimplificadoResponse {
+	return dtos.ProductoSimplificadoResponse{
+		ID:             detalle.Producto.ID,
+		Nombre:         detalle.Producto.Nombre,
+		Cantidad:       detalle.Cantidad,
+		PrecioUnitario: detalle.PrecioUnitario,
+	}
+}
+
 // Helper principal para mapear models.Cotizacion a dtos.CotizacionResponse
 func MapCotizacionToDTO(cotizacion models.Cotizacion) dtos.CotizacionResponse {
 	detalleResponses := make([]dtos.DetalleCotizacionResponse, len(cotizacion.DetalleCotizacion))
+	var total float64 = 0
+
 	for i, det := range cotizacion.DetalleCotizacion {
 		detalleResponses[i] = MapDetalleCotizacionToDTO(det) // Usa el helper para Detalle
+		// Calcular el total sumando (cantidad * precio_unitario) de cada detalle
+		total += float64(det.Cantidad) * det.PrecioUnitario
 	}
 
 	var aprobadaPorDTO *dtos.UsuarioAprobadorResponse
@@ -104,5 +116,37 @@ func MapCotizacionToDTO(cotizacion models.Cotizacion) dtos.CotizacionResponse {
 		AprobadaPor:       aprobadaPorDTO,
 		FechaAprobacion:   cotizacion.FechaAprobacion,
 		DetalleCotizacion: detalleResponses,
+		Total:             total,
+	}
+}
+
+// Helper para mapear models.Cotizacion a dtos.CotizacionListaResponse (formato simplificado)
+func MapCotizacionToListaDTO(cotizacion models.Cotizacion) dtos.CotizacionListaResponse {
+	productosSimplificados := make([]dtos.ProductoSimplificadoResponse, len(cotizacion.DetalleCotizacion))
+	var total float64 = 0
+
+	for i, det := range cotizacion.DetalleCotizacion {
+		productosSimplificados[i] = MapDetalleToProductoSimplificado(det)
+		// Calcular el total sumando (cantidad * precio_unitario) de cada detalle
+		total += float64(det.Cantidad) * det.PrecioUnitario
+	}
+
+	var aprobadaPorDTO *dtos.UsuarioAprobadorResponse
+	if cotizacion.AprobadaPor != nil {
+		aprobadaPorDTO = MapUsuarioToAprobadorDTO(*cotizacion.AprobadaPor)
+	}
+
+	return dtos.CotizacionListaResponse{
+		ID:              cotizacion.ID,
+		Fecha:           cotizacion.Fecha,
+		Cliente:         MapClienteToDTO(cotizacion.Cliente),
+		Vendedor:        MapUsuarioToVendedorDTO(cotizacion.Vendedor),
+		Ubicacion:       MapUbicacionToDTO(cotizacion.Ubicacion),
+		Estado:          cotizacion.Estado,
+		AprobadaPorID:   cotizacion.AprobadaPorID,
+		AprobadaPor:     aprobadaPorDTO,
+		FechaAprobacion: cotizacion.FechaAprobacion,
+		Productos:       productosSimplificados,
+		Total:           total,
 	}
 }

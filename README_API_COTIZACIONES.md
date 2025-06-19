@@ -41,7 +41,20 @@
     "vendedor": { ... },
     "ubicacion": { ... },
     "estado": "Pendiente",
-    "detalle_cotizacion": [ ... ]
+    "detalle_cotizacion": [
+      {
+        "producto_id": 8,
+        "cantidad": 1,
+        "precio_unitario": 459990,
+        "producto": {
+          "codigo": "753698569",
+          "nombre": "Cocina a Gas...",
+          "descripcion": "...",
+          "precio_venta": 459990
+        }
+      }
+    ],
+    "total": 1612990
   }
 }
 ```
@@ -100,7 +113,46 @@ Puedes usar los siguientes filtros como parámetros de query:
 **Respuesta:**
 ```json
 {
-  "data": [ ...cotizaciones... ],
+  "data": [
+    {
+      "id": 2,
+      "fecha": "2024-06-19T14:30:00-04:00",
+      "cliente": {
+        "id": 3,
+        "nombre": "Juan Pérez",
+        "telefono": "+56912345678",
+        "email": "juan@email.com",
+        "direccion": "Av. Principal 123"
+      },
+      "vendedor": {
+        "id": 5,
+        "nombre": "María González",
+        "email": "maria@empresa.com"
+      },
+      "ubicacion": {
+        "id": 7,
+        "nombre": "Sucursal Centro",
+        "tipo": "Tienda",
+        "direccion": "Calle Central 456"
+      },
+      "estado": "Pendiente",
+      "productos": [
+        {
+          "id": 8,
+          "nombre": "Cocina a Gas 4 Quemadores",
+          "cantidad": 1,
+          "precio_unitario": 459990
+        },
+        {
+          "id": 9,
+          "nombre": "Refrigerador Side by Side",
+          "cantidad": 1,
+          "precio_unitario": 658000
+        }
+      ],
+      "total": 1117990
+    }
+  ],
   "total": 4,
   "page": 1,
   "limit": 10
@@ -115,6 +167,58 @@ Puedes usar los siguientes filtros como parámetros de query:
 **Ejemplo:**
 ```
 GET /api/cotizaciones/2
+```
+
+**Respuesta:**
+```json
+{
+  "id": 2,
+  "fecha": "2024-06-19T14:30:00-04:00",
+  "cliente": {
+    "id": 3,
+    "nombre": "Juan Pérez",
+    "telefono": "+56912345678",
+    "email": "juan@email.com",
+    "direccion": "Av. Principal 123"
+  },
+  "vendedor": {
+    "id": 5,
+    "nombre": "María González",
+    "email": "maria@empresa.com"
+  },
+  "ubicacion": {
+    "id": 7,
+    "nombre": "Sucursal Centro",
+    "tipo": "Tienda",
+    "direccion": "Calle Central 456"
+  },
+  "estado": "Pendiente",
+  "detalle_cotizacion": [
+    {
+      "producto_id": 8,
+      "cantidad": 1,
+      "precio_unitario": 459990,
+      "producto": {
+        "codigo": "753698569",
+        "nombre": "Cocina a Gas 4 Quemadores",
+        "descripcion": "Cocina a gas con 4 quemadores y horno",
+        "precio_venta": 459990
+      }
+    },
+    {
+      "producto_id": 9,
+      "cantidad": 1,
+      "precio_unitario": 658000,
+      "producto": {
+        "codigo": "753698570",
+        "nombre": "Refrigerador Side by Side",
+        "descripcion": "Refrigerador de dos puertas",
+        "precio_venta": 658000
+      }
+    }
+  ],
+  "total": 1117990
+}
 ```
 
 ---

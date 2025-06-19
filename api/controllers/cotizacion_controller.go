@@ -15,7 +15,7 @@ import (
 // GET de todas las cotizaciones, con filtros por: Fechas, ClienteID, VendedorID, UbicacionID,
 // Estado, AprobadorPorID, Fecha Aprobacion, ClienteNombre, ClienteEmail, VendedorNombre, UbicacionNombre.
 // Ademas tiene paginacion con valor por defecto LIMIT=10 y PAGE=1.
-func GetCotizaciones(db *gorm.DB, queryParams map[string]string) ([]dtos.CotizacionResponse, int64, error) {
+func GetCotizaciones(db *gorm.DB, queryParams map[string]string) ([]dtos.CotizacionListaResponse, int64, error) {
 	var cotizacionesModel []models.Cotizacion
 	var totalRecords int64
 
@@ -127,10 +127,10 @@ func GetCotizaciones(db *gorm.DB, queryParams map[string]string) ([]dtos.Cotizac
 		return nil, 0, err
 	}
 
-	// Mapear los modelos de GORM a DTOs para la respuesta
-	cotizacionesResponse := make([]dtos.CotizacionResponse, len(cotizacionesModel))
+	// Mapear los modelos de GORM a DTOs para la respuesta (formato simplificado)
+	cotizacionesResponse := make([]dtos.CotizacionListaResponse, len(cotizacionesModel))
 	for i, cot := range cotizacionesModel {
-		cotizacionesResponse[i] = mappers.MapCotizacionToDTO(cot)
+		cotizacionesResponse[i] = mappers.MapCotizacionToListaDTO(cot)
 	}
 
 	return cotizacionesResponse, totalRecords, nil

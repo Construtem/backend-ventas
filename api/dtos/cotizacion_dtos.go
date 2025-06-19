@@ -32,7 +32,6 @@ type UsuarioAprobadorResponse struct { // Usar para AprobadaPor
 }
 
 type ProductoDetalleResponse struct {
-	ID          uint    `json:"id"`
 	Codigo      *string `json:"codigo,omitempty"`
 	Nombre      string  `json:"nombre"`
 	Descripcion *string `json:"descripcion,omitempty"`
@@ -42,31 +41,55 @@ type ProductoDetalleResponse struct {
 
 // DTO para el detalle de la cotización
 type DetalleCotizacionResponse struct {
-	CotizacionID   uint                     `json:"cotizacion_id"`
 	ProductoID     uint                     `json:"producto_id"`
 	Cantidad       int                      `json:"cantidad"`
 	PrecioUnitario float64                  `json:"precio_unitario"`
 	Producto       *ProductoDetalleResponse `json:"producto,omitempty"` // Aquí anidamos el Producto
 }
 
+// DTO para el producto simplificado en listado de cotizaciones
+type ProductoSimplificadoResponse struct {
+	ID             uint    `json:"id"`
+	Nombre         string  `json:"nombre"`
+	Cantidad       int     `json:"cantidad"`
+	PrecioUnitario float64 `json:"precio_unitario"`
+}
+
 // DTO principal para la Cotización
 type CotizacionResponse struct {
-	ID                uint                        `json:"id"`
-	Fecha             time.Time                   `json:"fecha"`
-	Cliente           *ClienteResponse            `json:"cliente"`   // Puntero para nil si no se carga
-	Vendedor          *VendedorResponse           `json:"vendedor"`  // Puntero para nil si no se carga
-	Ubicacion         *UbicacionResponse          `json:"ubicacion"` // Puntero para nil si no se carga
-	Estado            string                      `json:"estado"`
-	AprobadaPorID     *uint                       `json:"aprobada_por_id,omitempty"` // Mantener ID si es relevante
-	AprobadaPor       *UsuarioAprobadorResponse   `json:"aprobada_por,omitempty"`    // Datos del usuario aprobador
-	FechaAprobacion   *time.Time                  `json:"fecha_aprobacion,omitempty"`
-	DetalleCotizacion []DetalleCotizacionResponse `json:"detalle_cotizacion,omitempty"`
+	ID                uint                           `json:"id"`
+	Fecha             time.Time                      `json:"fecha"`
+	Cliente           *ClienteResponse               `json:"cliente"`   // Puntero para nil si no se carga
+	Vendedor          *VendedorResponse              `json:"vendedor"`  // Puntero para nil si no se carga
+	Ubicacion         *UbicacionResponse             `json:"ubicacion"` // Puntero para nil si no se carga
+	Estado            string                         `json:"estado"`
+	AprobadaPorID     *uint                          `json:"aprobada_por_id,omitempty"` // Mantener ID si es relevante
+	AprobadaPor       *UsuarioAprobadorResponse      `json:"aprobada_por,omitempty"`    // Datos del usuario aprobador
+	FechaAprobacion   *time.Time                     `json:"fecha_aprobacion,omitempty"`
+	DetalleCotizacion []DetalleCotizacionResponse    `json:"detalle_cotizacion,omitempty"`
+	Productos         []ProductoSimplificadoResponse `json:"productos,omitempty"` // Lista simplificada de productos
+	Total             float64                        `json:"total"`               // Total calculado de la cotización
+}
+
+// DTO para el listado de cotizaciones (formato simplificado)
+type CotizacionListaResponse struct {
+	ID              uint                           `json:"id"`
+	Fecha           time.Time                      `json:"fecha"`
+	Cliente         *ClienteResponse               `json:"cliente"`
+	Vendedor        *VendedorResponse              `json:"vendedor"`
+	Ubicacion       *UbicacionResponse             `json:"ubicacion"`
+	Estado          string                         `json:"estado"`
+	AprobadaPorID   *uint                          `json:"aprobada_por_id,omitempty"`
+	AprobadaPor     *UsuarioAprobadorResponse      `json:"aprobada_por,omitempty"`
+	FechaAprobacion *time.Time                     `json:"fecha_aprobacion,omitempty"`
+	Productos       []ProductoSimplificadoResponse `json:"productos,omitempty"`
+	Total           float64                        `json:"total"`
 }
 
 // DTO para la respuesta de listado de cotizaciones con paginación
 type CotizacionesListResponse struct {
-	Data  []CotizacionResponse `json:"data"`
-	Total int64                `json:"total"`
-	Page  int                  `json:"page"`
-	Limit int                  `json:"limit"`
+	Data  []CotizacionListaResponse `json:"data"`
+	Total int64                     `json:"total"`
+	Page  int                       `json:"page"`
+	Limit int                       `json:"limit"`
 }
