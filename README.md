@@ -1,6 +1,7 @@
 # Backend - Ventas
 
-Este repositorio contiene el microservicio backend para el módulo de **ventas** en Construtem.
+- Este repositorio contiene el microservicio backend para el módulo de **ventas** en Construtem.
+- Este microservicio será desplegado con la siguiente URL: https://api-ventas.tssw.cl
 
 ## 🛠️ Tecnologías
 - Go (Lenguaje)
@@ -13,15 +14,12 @@ Este repositorio contiene el microservicio backend para el módulo de **ventas**
 - Consultar disponibilidad de productos.
 - Validaciones de negocio para ventas.
 
-## 📁 Estructura del proyecto
-- Por definir
-
 ## Requisitos
 
 - Docker Desktop instalado
 - Git instalado 
 
-  ## Instalación (entorno de desarrollo)
+## Instalación (entorno de desarrollo)
 
 1. Clonar el repositorio en el directorio deseado:
 
