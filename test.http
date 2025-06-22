@@ -16,14 +16,14 @@ Content-Type: application/json
 
 
 ### 🟡 PATCH - Actualizar cliente con ID 1
-PATCH http://localhost:7777/clientes/11
+PATCH http://localhost:7777/clientes/12
 Content-Type: application/json
 
 {
-  "nombre": "Ana R. Modificada",
-  "rut": "20145267-8",
-  "correo": "ana.rojas@example.com",
+  "nombre": "Jere Modificado",
+  "rut": "20667647-7",
+  "correo": "jere.@example.com",
   "telefono": "+56911223344",
-  "region_comuna": "Viña"
+  "region_comuna": "Santiago"
 }
 
