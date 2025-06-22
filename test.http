@@ -1,0 +1,29 @@
+### 🟢 GET - Obtener todos los clientes
+GET http://localhost:7777/clientes
+
+
+### 🟢 POST - Crear nuevo cliente
+POST http://localhost:7777/clientes
+Content-Type: application/json
+
+{
+  "nombre": "Jeremy Vega",
+  "rut": "20667647-7",
+  "correo": "jere.@example.com",
+  "telefono": "+569123456789",
+  "region_comuna": "Santiago"
+}
+
+
+### 🟡 PATCH - Actualizar cliente con ID 1
+PATCH http://localhost:7777/clientes/11
+Content-Type: application/json
+
+{
+  "nombre": "Ana R. Modificada",
+  "rut": "20145267-8",
+  "correo": "ana.rojas@example.com",
+  "telefono": "+56911223344",
+  "region_comuna": "Viña"
+}
+
