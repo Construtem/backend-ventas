@@ -5,7 +5,10 @@ import (
 	"log"
 	"os"
 
+	"backend-ventas/api/models"
 	"backend-ventas/api/routes" // Paquete de rutas
+
+	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -31,9 +34,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error al conectar a la base de datos: %v", err)
 	}
+
+	db.AutoMigrate(
+		&models.Cotizacion{},
+		&models.DetalleCotizacion{},
+	) // Agrega aquí todos tus modelos
+
 	log.Println("Conexión a la base de datos exitosa.")
 
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	// --- Configura todas las rutas ---
 	routes.SetupRoutes(router, db)
