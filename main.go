@@ -9,8 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Corriendo en localhost:8080 !!!")
-
+	
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -18,8 +17,11 @@ func main() {
 		})
 	})
 
-	db.Conectar() // conecta la base de datos
-	routes.ClienteRoutes(router)
+	db.Conectar() // conecta la base de datos desde la funcion Conectar() del archivo db.go
+	routes.ClienteRoutes(router) 
 
-	router.Run(":7777") // listen and serve on 0.0.0.0:8080
+	puerto := ":8081"
+	router.Run(puerto) // listen and serve on 0.0.0.0:8080
+	fmt.Print("\n\n\t\t>>>>> Corriendo en localhost:", puerto ,"!!!\n\n")
+
 }

@@ -4,7 +4,7 @@ type Cliente struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
 	Nombre       string `gorm:"column:nombre_cliente" json:"nombre"`
 	Rut          string `json:"rut"`
-	Correo       string `gorm:"unique" json:"correo"`
+	Correo       string `json:"correo"`
 	Telefono     string `json:"telefono"`
 	RegionComuna string `json:"region_comuna"`
 }
