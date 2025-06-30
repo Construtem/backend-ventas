@@ -1,59 +1,26 @@
 package main
 
 import (
+	"backend-ventas/db"
+	"backend-ventas/routes"
 	"fmt"
-	"log"
-	"os"
-
-	"backend-ventas/api/models"
-	"backend-ventas/api/routes" // Paquete de rutas
-
-	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func main() {
-	// Verifica variables de entorno para la conexión a la DB
-	dbHost := os.Getenv("DB_HOST")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbPort := os.Getenv("DB_PORT")
-
-	if dbHost == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbPort == "" {
-		log.Fatal("Error: Una o más variables de entorno de la base de datos (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT) no están configuradas")
-	}
-
-	// Cadena de conexión DSN para PostgreSQL
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=America/Santiago", dbHost, dbUser, dbPassword, dbName, dbPort)
-
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{}) // Conecta a la base de datos e inicializa GORM
-	if err != nil {
-		log.Fatalf("Error al conectar a la base de datos: %v", err)
-	}
-
-	db.AutoMigrate(
-		&models.Cotizacion{},
-		&models.DetalleCotizacion{},
-	) // Agrega aquí todos tus modelos
-
-	log.Println("Conexión a la base de datos exitosa.")
-
+	
 	router := gin.Default()
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 
-	router.Use(cors.Default())
+	db.Conectar() // conecta la base de datos desde la funcion Conectar() del archivo db.go
+	routes.ClienteRoutes(router) 
 
-	// --- Configura todas las rutas ---
-	routes.SetupRoutes(router, db)
-
-	port := os.Getenv("API_PORT")
-	if port == "" {
-		port = "8080" // Puerto por defecto
-	}
-
-	log.Printf("Servidor Gin iniciado en el puerto :%s", port)
-	router.Run(":" + port)
+	puerto := ":8080"
+	router.Run(puerto) // listen and serve on 0.0.0.0:8080
+	fmt.Print("\n\n\t\t>>>>> Corriendo en localhost:", puerto ,"!!!\n\n")
 }

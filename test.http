@@ -1,0 +1,33 @@
+### 🟢 GET - Obtener todos los clientes
+GET http://localhost:8081/clientes
+
+
+### 🟢 POST - Crear nuevo cliente
+POST http://localhost:8081/clientes
+Content-Type: application/json
+
+{
+  "nombre": "Jeremy Vega",
+  "rut": "19658977-5",
+  "correo": "jere4.@example.com",
+  "telefono": "+569123456789",
+  "region_comuna": "Santiago"
+}
+
+
+### 🟡 PATCH - Actualizar cliente con ID X
+### Para conservar los mismos datos poner ""
+PATCH http://localhost:8081/clientes/15
+Content-Type: application/json
+
+{
+  "nombre": "",
+  "rut": "",
+  "correo": "",
+  "telefono": "",
+  "region_comuna": ""
+}
+
+### 🟡 DELETE - Borrar cliente con ID X
+DELETE http://localhost:8081/clientes/12
+
