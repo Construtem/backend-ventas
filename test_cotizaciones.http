@@ -1,0 +1,106 @@
+
+@baseUrl = http://localhost:8080
+
+### =============================
+### PUT /api/cotizaciones/{id}
+### Editar solo el estado
+PUT {{baseUrl}}/api/cotizaciones/1
+Content-Type: application/json
+
+{
+  "estado": "APROBADA"
+}
+
+### =============================
+### PUT /api/cotizaciones/{id}
+### Editar solo el costo de envío
+PUT {{baseUrl}}/api/cotizaciones/1
+Content-Type: application/json
+
+{
+  "costo_envio": 5000.00
+}
+
+### =============================
+### PUT /api/cotizaciones/{id}
+### Editar solo el tipo de despacho
+PUT {{baseUrl}}/api/cotizaciones/1
+Content-Type: application/json
+
+{
+  "tipo_despacho": "EXPRESS"
+}
+
+### =============================
+### PUT /api/cotizaciones/{id}
+### Editar varios campos a la vez
+PUT {{baseUrl}}/api/cotizaciones/1
+Content-Type: application/json
+
+{
+  "estado": "CANCELADA",
+  "costo_envio": 0,
+  "tipo_despacho": "ESTANDAR"
+}
+
+### =============================
+### POST /api/quotations
+### Crear una quotation
+POST {{baseUrl}}/api/cotizaciones
+Content-Type: application/json
+
+{
+  "cliente_id": 1,
+  "user_id": "vendedor1@empresa.com",
+  "tipo_despacho": "EXPRESS",
+  "costo_envio": 10000.00
+}
+
+### =============================
+### POST /api/quotations/{id}/items
+### Agregar item a quotation (ejemplo para id=1)
+POST {{baseUrl}}/api/cotizaciones/1/items
+Content-Type: application/json
+
+{
+  "producto_id": 4,
+  "sucursal_id": 1,
+  "cantidad": 1
+}
+
+### =============================
+### PUT /api/quotations/{id}
+### Editar quotation (ejemplo para id=1)
+PUT {{baseUrl}}/api/cotizaciones/1
+Content-Type: application/json
+
+{
+  "estado": "APROBADA",
+  "costo_envio": 7500.00,
+  "tipo_despacho": "EXPRESS"
+}
+
+### =============================
+### GET /api/cotizaciones/{id}/items
+### Obtener items de una cotización (ejemplo para id=1)
+GET {{baseUrl}}/api/cotizaciones/1/items
+
+### =============================
+### GET /api/cotizaciones/{id}/items/simple
+### Obtener items simples de una cotización (ejemplo para id=1)
+GET {{baseUrl}}/api/cotizaciones/1/items/simple
+
+### =============================
+### DELETE /api/cotizaciones/{cotizacion_id}/items/{item_id}
+### Eliminar el item completo
+DELETE {{baseUrl}}/api/cotizaciones/1/items/1
+
+### =============================
+### DELETE /api/cotizaciones/{cotizacion_id}/items/{item_id}
+### Disminuir la cantidad del item (por ejemplo, restar 2 unidades)
+DELETE {{baseUrl}}/api/cotizaciones/1/items/1
+Content-Type: application/json
+
+{
+  "cantidad": 2
+}

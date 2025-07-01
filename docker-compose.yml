@@ -18,9 +18,9 @@ services:
       # DB_HOST: 172.17.0.1         # <--- Alternativa para Linux (puede variar, ver "Más sobre DB_HOST" abajo)
       # DB_HOST: TU_IP_DE_MAQUINA  # <--- Otra alternativa, si tu IP es estática y el firewall lo permite
 
-      DB_PORT: 5432 # <--- El puerto en el que tu PostgreSQL externo está escuchando (generalmente 5432)
+      DB_PORT: 3131 # <--- El puerto en el que tu PostgreSQL externo está escuchando (generalmente 5432)
       DB_USER: postgres # Tu usuario de DB (el de tu DB externa)
       DB_PASSWORD: 123456789 # Tu contraseña de DB (la de tu DB externa)
-      DB_NAME: test-db # El nombre de tu DB externa
+      DB_NAME: test # El nombre de tu DB externa
       DB_SSLMODE: disable # Usualmente 'disable' para desarrollo local
       JWT_SECRET_KEY: 101010101010 # Tu clave secreta JWT

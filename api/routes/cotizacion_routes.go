@@ -1,0 +1,26 @@
+package routes
+
+import (
+	"backend-ventas/api/database"
+	"backend-ventas/api/handlers"
+
+	"github.com/gin-gonic/gin"
+)
+
+func CotizacionRoutes(r *gin.Engine) {
+	// Grupo de rutas para cotizaciones con prefijo /api
+	cotizaciones := r.Group("/api/cotizaciones")
+	{
+		cotizaciones.GET("", handlers.ObtenerCotizacionesSimplificadas(database.DB))
+		cotizaciones.POST("", handlers.CrearCotizacion(database.DB))
+		cotizaciones.GET(":id", handlers.ObtenerCotizacionSimplificada(database.DB))
+		cotizaciones.PUT(":id", handlers.EditarCotizacion(database.DB))
+		cotizaciones.GET(":id/items", handlers.ObtenerItemsCotizacion(database.DB))
+		cotizaciones.POST(":id/items", handlers.AgregarItemCotizacion(database.DB))
+		cotizaciones.POST(":id/preview", handlers.CrearPreviewCotizacion(database.DB))
+		cotizaciones.GET("completas", handlers.ObtenerCotizaciones(database.DB))
+		cotizaciones.GET("completa/:id", handlers.ObtenerCotizacionPorID(database.DB))
+		cotizaciones.GET(":id/items/simple", handlers.ObtenerItemsSimplesCotizacion(database.DB))
+		cotizaciones.DELETE(":cotizacion_id/items/:item_id", handlers.EliminarItemCotizacion(database.DB))
+	}
+}

@@ -71,4 +71,3 @@ git push origin feature/<nombre-funcionalidad>
 ```
 
 4. Crea un Pull Request (PR) a la rama ´develop´ desde GitHub para que sea revisado por otro desarrollador
-
