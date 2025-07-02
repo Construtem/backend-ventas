@@ -203,6 +203,14 @@ func CreateCotizacion(db *gorm.DB, cotizacion *models.Cotizacion) error {
 		return err
 	}
 
+	// Registrar en historial
+	h := models.HistorialCotizacion{
+		CotizacionID: cotizacion.ID,
+		Accion:       "Creada",
+		Fecha:        time.Now(),
+	}
+	_ = CreateHistorial(db, &h)
+
 	return nil
 }
 
@@ -249,6 +257,17 @@ func UpdateEstadoCotizacion(db *gorm.DB, id uint, nuevoEstado string, usuarioID 
 	if err != nil {
 		return dtos.CotizacionResponse{}, errors.New("cotización actualizada, pero error al recargar para la respuesta: " + err.Error())
 	}
+
+	// Registrar historial
+	detalle := "Estado: " + nuevoEstado
+	hist := models.HistorialCotizacion{
+		CotizacionID: id,
+		Accion:       "Cambio de estado",
+		UsuarioID:    usuarioID,
+		Fecha:        time.Now(),
+		Detalles:     &detalle,
+	}
+	_ = CreateHistorial(db, &hist)
 
 	return mappers.MapCotizacionToDTO(updatedCotizacionModel), nil
 }
@@ -330,5 +349,33 @@ func UpdateCotizacionDetalle(db *gorm.DB, cotizacionID uint, nuevoDetalle []mode
 		return dtos.CotizacionResponse{}, err
 	}
 
+	// Registrar historial
+	desc := "Actualización de detalles"
+	h := models.HistorialCotizacion{
+		CotizacionID: cotizacionID,
+		Accion:       "Modificación de detalle",
+		Fecha:        time.Now(),
+		Detalles:     &desc,
+	}
+	_ = CreateHistorial(db, &h)
+
 	return mappers.MapCotizacionToDTO(updatedCotizacionModel), nil
+}
+
+// CreateHistorial registra un nuevo evento en el historial de una cotizacion.
+func CreateHistorial(db *gorm.DB, historial *models.HistorialCotizacion) error {
+	return db.Create(historial).Error
+}
+
+// GetHistorialByCotizacionID devuelve el historial de una cotizacion especifica.
+func GetHistorialByCotizacionID(db *gorm.DB, cotizacionID uint) ([]dtos.HistorialCotizacionResponse, error) {
+	var registros []models.HistorialCotizacion
+	if err := db.Preload("Usuario").Where("cotizacion_id = ?", cotizacionID).Order("fecha asc").Find(&registros).Error; err != nil {
+		return nil, err
+	}
+	res := make([]dtos.HistorialCotizacionResponse, len(registros))
+	for i, h := range registros {
+		res[i] = mappers.MapHistorialCotizacionToDTO(h)
+	}
+	return res, nil
 }

@@ -57,9 +57,6 @@
     "total": 1612990
   }
 }
-```
-
----
 
 ### Listar cotizaciones con filtros
 **GET** `/api/cotizaciones`
@@ -246,6 +243,27 @@ GET /api/cotizaciones/2
     "producto_id": 8,
     "cantidad": 2,
     "precio_unitario": 450000
+  }
+]
+```
+
+### Historial de una cotización
+**GET** `/api/cotizaciones/{id}/historial`
+
+Devuelve los eventos asociados a la cotización.
+
+**Ejemplo:**
+```
+GET /api/cotizaciones/2/historial
+```
+
+**Respuesta:**
+```json
+[
+  {
+    "id": 1,
+    "fecha": "2024-06-19T14:30:00-04:00",
+    "accion": "Creada"
   }
 ]
 ```

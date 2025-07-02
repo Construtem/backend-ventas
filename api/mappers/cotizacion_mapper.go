@@ -79,6 +79,22 @@ func MapDetalleCotizacionToDTO(detalle models.DetalleCotizacion) dtos.DetalleCot
 	}
 }
 
+// MapHistorialCotizacionToDTO convierte un modelo HistorialCotizacion en su DTO correspondiente.
+func MapHistorialCotizacionToDTO(h models.HistorialCotizacion) dtos.HistorialCotizacionResponse {
+	var usuarioDTO *dtos.UsuarioAprobadorResponse
+	if h.Usuario != nil {
+		u := *h.Usuario
+		usuarioDTO = MapUsuarioToAprobadorDTO(u)
+	}
+	return dtos.HistorialCotizacionResponse{
+		ID:       h.ID,
+		Fecha:    h.Fecha,
+		Accion:   h.Accion,
+		Usuario:  usuarioDTO,
+		Detalles: h.Detalles,
+	}
+}
+
 // Helper para mapear models.DetalleCotizacion a dtos.ProductoSimplificadoResponse
 func MapDetalleToProductoSimplificado(detalle models.DetalleCotizacion) dtos.ProductoSimplificadoResponse {
 	return dtos.ProductoSimplificadoResponse{

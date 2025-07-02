@@ -163,3 +163,23 @@ func UpdateCotizacionDetalleHandler(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Detalles de cotización actualizados con éxito", "cotizacion": updatedCotizacionDTO})
 	}
 }
+
+// GetHistorialCotizacionHandler maneja la obtención del historial de una cotizacion.
+func GetHistorialCotizacionHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+			return
+		}
+
+		historial, err := controllers.GetHistorialByCotizacionID(db, uint(id))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, historial)
+	}
+}

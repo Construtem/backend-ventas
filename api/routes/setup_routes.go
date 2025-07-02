@@ -24,6 +24,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		api.GET("/cotizaciones/:id", handlers.GetCotizacionByIDHandler(db))
 		api.PATCH("/cotizaciones/:id/estado", handlers.UpdateEstadoCotizacionHandler(db))
 		api.PATCH("/cotizaciones/:id/detalles", handlers.UpdateCotizacionDetalleHandler(db))
+		api.GET("/cotizaciones/:id/historial", handlers.GetHistorialCotizacionHandler(db))
 
 		// !!! IMPORTANTE: Estas rutas necesitan ser refactorizadas en sus handlers
 		// para aceptar 'db' y retornar gin.HandlerFunc, de forma consistente.
