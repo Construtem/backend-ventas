@@ -4,55 +4,55 @@ import (
 	"time"
 )
 
-// ========================================
-// MODELOS DE CLIENTE (Solo para respuestas JSON)
-// ========================================
+// // ========================================
+// // MODELOS DE CLIENTE (Solo para respuestas JSON)
+// // ========================================
 
-// Cliente representa un cliente en el sistema
-type Cliente struct {
-	Nombre      string  `gorm:"not null" json:"nombre"`
-	Telefono    *string `json:"telefono"`
-	Email       *string `json:"email"`
-	RazonSocial *string `gorm:"column:razon_social" json:"razon_social"`
-	Rut         string  `gorm:"primaryKey" json:"rut"`
-	TipoID      int     `gorm:"column:tipo_id;not null" json:"tipo_id"`
+// // Cliente representa un cliente en el sistema
+// type Cliente struct {
+// 	Nombre      string  `gorm:"not null" json:"nombre"`
+// 	Telefono    *string `json:"telefono"`
+// 	Email       *string `json:"email"`
+// 	RazonSocial *string `gorm:"column:razon_social" json:"razon_social"`
+// 	Rut         string  `gorm:"primaryKey" json:"rut"`
+// 	TipoID      int     `gorm:"column:tipo_id;not null" json:"tipo_id"`
 
-	// Relaciones
-	TipoCliente  *TipoCliente `gorm:"foreignKey:TipoID" json:"tipo_cliente,omitempty"`
-	Direcciones  []DirCliente `gorm:"foreignKey:RutCliente" json:"direcciones,omitempty"`
-	Cotizaciones []Cotizacion `gorm:"foreignKey:RutCliente" json:"cotizaciones,omitempty"`
-}
+// 	// Relaciones
+// 	TipoCliente  *TipoCliente `gorm:"foreignKey:TipoID" json:"tipo_cliente,omitempty"`
+// 	Direcciones  []DirCliente `gorm:"foreignKey:RutCliente" json:"direcciones,omitempty"`
+// 	Cotizaciones []Cotizacion `gorm:"foreignKey:RutCliente" json:"cotizaciones,omitempty"`
+// }
 
-// TableName especifica el nombre de la tabla en la base de datos
-func (Cliente) TableName() string {
-	return "clientes"
-}
+// // TableName especifica el nombre de la tabla en la base de datos
+// func (Cliente) TableName() string {
+// 	return "clientes"
+// }
 
-// TipoCliente representa el tipo de cliente
-type TipoCliente struct {
-	ID     int    `gorm:"primaryKey" json:"id"`
-	Nombre string `gorm:"not null" json:"nombre"`
-}
+// // TipoCliente representa el tipo de cliente
+// type TipoCliente struct {
+// 	ID     int    `gorm:"primaryKey" json:"id"`
+// 	Nombre string `gorm:"not null" json:"nombre"`
+// }
 
-func (TipoCliente) TableName() string {
-	return "tipo_cliente"
-}
+// func (TipoCliente) TableName() string {
+// 	return "tipo_cliente"
+// }
 
-// DirCliente representa las direcciones de un cliente
-type DirCliente struct {
-	ID         int    `gorm:"primaryKey" json:"id"`
-	RutCliente string `gorm:"column:rut_cliente;not null" json:"rut_cliente"`
-	Direccion  string `gorm:"not null" json:"direccion"`
-	Comuna     string `gorm:"not null" json:"comuna"`
-	Ciudad     string `gorm:"not null" json:"ciudad"`
+// // DirCliente representa las direcciones de un cliente
+// type DirCliente struct {
+// 	ID         int    `gorm:"primaryKey" json:"id"`
+// 	RutCliente string `gorm:"column:rut_cliente;not null" json:"rut_cliente"`
+// 	Direccion  string `gorm:"not null" json:"direccion"`
+// 	Comuna     string `gorm:"not null" json:"comuna"`
+// 	Ciudad     string `gorm:"not null" json:"ciudad"`
 
-	// Relaciones
-	Cliente *Cliente `gorm:"foreignKey:RutCliente" json:"cliente,omitempty"`
-}
+// 	// Relaciones
+// 	Cliente *Cliente `gorm:"foreignKey:RutCliente" json:"cliente,omitempty"`
+// }
 
-func (DirCliente) TableName() string {
-	return "dir_cliente"
-}
+// func (DirCliente) TableName() string {
+// 	return "dir_cliente"
+// }
 
 // ========================================
 // MODELOS DE COTIZACIÓN
