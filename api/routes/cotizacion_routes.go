@@ -21,6 +21,6 @@ func CotizacionRoutes(r *gin.Engine) {
 		cotizaciones.GET("completas", handlers.ObtenerCotizaciones(database.DB))
 		cotizaciones.GET("completa/:id", handlers.ObtenerCotizacionPorID(database.DB))
 		cotizaciones.GET(":id/items/simple", handlers.ObtenerItemsSimplesCotizacion(database.DB))
-		cotizaciones.DELETE(":cotizacion_id/items/:item_id", handlers.EliminarItemCotizacion(database.DB))
+		cotizaciones.DELETE(":id/items/:producto_id/:sucursal_id", handlers.EliminarItemCotizacion(database.DB))
 	}
 }

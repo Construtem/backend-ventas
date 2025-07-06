@@ -3,10 +3,8 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"backend-ventas/api/controllers"
 	"backend-ventas/api/dtos"
@@ -34,7 +32,9 @@ func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 				totalPrecio += float64(item.Cantidad) * item.Producto.Precio
 			}
 			totalPrecio += cotizacion.CostoEnvio
+			// Al armar la respuesta simplificada, incluir el ID
 			simplificada := dtos.CotizacionSimplificadaResponse{
+				ID:           cotizacion.ID,
 				FechaCrea:    cotizacion.FechaCrea,
 				Estado:       cotizacion.Estado,
 				CostoEnvio:   cotizacion.CostoEnvio,
@@ -49,14 +49,20 @@ func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 			}
 			if cotizacion.Cliente != nil {
 				simplificada.Cliente.Nombre = cotizacion.Cliente.Nombre
-				simplificada.Cliente.Telefono = cotizacion.Cliente.Telefono
-				simplificada.Cliente.Email = cotizacion.Cliente.Email
+				if cotizacion.Cliente.Telefono != nil {
+					simplificada.Cliente.Telefono = *cotizacion.Cliente.Telefono
+				}
+				if cotizacion.Cliente.Email != nil {
+					simplificada.Cliente.Email = *cotizacion.Cliente.Email
+				}
 				simplificada.Cliente.Rut = cotizacion.Cliente.Rut
-				simplificada.Cliente.RazonSocial = cotizacion.Cliente.RazonSocial
+				if cotizacion.Cliente.RazonSocial != nil {
+					simplificada.Cliente.RazonSocial = *cotizacion.Cliente.RazonSocial
+				}
 			}
 			for _, item := range cotizacion.Items {
 				simplificada.Items = append(simplificada.Items, struct {
-					SKU      uint   `json:"sku"`
+					SKU      string `json:"sku"`
 					Nombre   string `json:"nombre"`
 					Cantidad int    `json:"cantidad"`
 				}{
@@ -75,12 +81,12 @@ func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 func ObtenerCotizacionSimplificada(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.ParseUint(id, 10, 32)
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-		cotizacion, err := controllers.ObtenerCotizacionSimplePorID(uint(cotizacionID))
+		cotizacion, err := controllers.ObtenerCotizacionSimplePorID(cotizacionID)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
 			return
@@ -93,6 +99,7 @@ func ObtenerCotizacionSimplificada(db *gorm.DB) gin.HandlerFunc {
 		}
 		totalPrecio += cotizacion.CostoEnvio
 		response := dtos.CotizacionSimplificadaResponse{
+			ID:           cotizacion.ID,
 			FechaCrea:    cotizacion.FechaCrea,
 			Estado:       cotizacion.Estado,
 			CostoEnvio:   cotizacion.CostoEnvio,
@@ -107,14 +114,20 @@ func ObtenerCotizacionSimplificada(db *gorm.DB) gin.HandlerFunc {
 		}
 		if cotizacion.Cliente != nil {
 			response.Cliente.Nombre = cotizacion.Cliente.Nombre
-			response.Cliente.Telefono = cotizacion.Cliente.Telefono
-			response.Cliente.Email = cotizacion.Cliente.Email
+			if cotizacion.Cliente.Telefono != nil {
+				response.Cliente.Telefono = *cotizacion.Cliente.Telefono
+			}
+			if cotizacion.Cliente.Email != nil {
+				response.Cliente.Email = *cotizacion.Cliente.Email
+			}
 			response.Cliente.Rut = cotizacion.Cliente.Rut
-			response.Cliente.RazonSocial = cotizacion.Cliente.RazonSocial
+			if cotizacion.Cliente.RazonSocial != nil {
+				response.Cliente.RazonSocial = *cotizacion.Cliente.RazonSocial
+			}
 		}
 		for _, item := range cotizacion.Items {
 			response.Items = append(response.Items, struct {
-				SKU      uint   `json:"sku"`
+				SKU      string `json:"sku"`
 				Nombre   string `json:"nombre"`
 				Cantidad int    `json:"cantidad"`
 			}{
@@ -149,9 +162,10 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 				FechaCrea:    cotizacion.FechaCrea,
 				Estado:       cotizacion.Estado,
 				CostoEnvio:   cotizacion.CostoEnvio,
-				ClienteID:    cotizacion.ClienteID,
+				RutCliente:   cotizacion.RutCliente,
 				UserID:       cotizacion.UserID,
 				TipoDespacho: cotizacion.TipoDespacho,
+				Total:        cotizacion.Total,
 				Cliente:      cotizacion.Cliente,
 				TotalItems:   totalItems,
 				TotalPrecio:  totalPrecio,
@@ -176,12 +190,12 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 func ObtenerCotizacionPorID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.ParseUint(id, 10, 32)
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-		cotizacion, err := controllers.ObtenerCotizacionCompletaPorID(uint(cotizacionID))
+		cotizacion, err := controllers.ObtenerCotizacionCompletaPorID(cotizacionID)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
 			return
@@ -198,9 +212,10 @@ func ObtenerCotizacionPorID(db *gorm.DB) gin.HandlerFunc {
 			FechaCrea:    cotizacion.FechaCrea,
 			Estado:       cotizacion.Estado,
 			CostoEnvio:   cotizacion.CostoEnvio,
-			ClienteID:    cotizacion.ClienteID,
+			RutCliente:   cotizacion.RutCliente,
 			UserID:       cotizacion.UserID,
 			TipoDespacho: cotizacion.TipoDespacho,
+			Total:        cotizacion.Total,
 			Cliente:      cotizacion.Cliente,
 			Usuario:      cotizacion.Usuario,
 			TotalItems:   totalItems,
@@ -220,64 +235,61 @@ func ObtenerCotizacionPorID(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// GET /cotizaciones/:id/items/simple - Obtener items simples
+// GET /cotizaciones/:id/items/simples - Obtener items simples de una cotización
 func ObtenerItemsSimplesCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.ParseUint(id, 10, 32)
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-		items, err := controllers.ObtenerItemsSimplesCotizacion(uint(cotizacionID))
+		items, err := controllers.ObtenerItemsSimplesCotizacion(cotizacionID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener items de la cotización"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener items"})
 			return
 		}
 		type ItemSimple struct {
-			SKU         uint   `json:"sku"`
+			SKU         string `json:"sku"`
 			Nombre      string `json:"nombre"`
 			Descripcion string `json:"descripcion"`
 			Marca       string `json:"marca"`
 			Cantidad    int    `json:"cantidad"`
 			Sucursal    string `json:"sucursal"`
 		}
-		var itemsResponse []ItemSimple
+		var result []ItemSimple
 		for _, item := range items {
-			itemsResponse = append(itemsResponse, ItemSimple{
+			itemSimple := ItemSimple{
 				SKU:         item.Producto.SKU,
 				Nombre:      item.Producto.Nombre,
 				Descripcion: item.Producto.Descripcion,
 				Marca:       item.Producto.Marca,
 				Cantidad:    item.Cantidad,
 				Sucursal:    item.Sucursal.Nombre,
-			})
+			}
+			result = append(result, itemSimple)
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"cotizacion_id": cotizacionID,
-			"items":         itemsResponse,
-			"total_items":   len(itemsResponse),
-		})
+		c.JSON(http.StatusOK, result)
 	}
 }
 
-// GET /cotizaciones/:id/items - Obtener items completos
+// GET /cotizaciones/:id/items - Obtener items completos de una cotización
 func ObtenerItemsCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.ParseUint(id, 10, 32)
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-		items, err := controllers.ObtenerItemsCompletosCotizacion(uint(cotizacionID))
+		items, err := controllers.ObtenerItemsCompletosCotizacion(cotizacionID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener items de la cotización"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener items"})
 			return
 		}
-		var itemsResponse []dtos.CotizacionItemResponse
+		var response []dtos.CotizacionItemResponse
 		for _, item := range items {
-			itemsResponse = append(itemsResponse, dtos.CotizacionItemResponse{
+			response = append(response, dtos.CotizacionItemResponse{
 				CotizacionID: item.CotizacionID,
 				ProductoID:   item.ProductoID,
 				SucursalID:   item.SucursalID,
@@ -286,52 +298,36 @@ func ObtenerItemsCotizacion(db *gorm.DB) gin.HandlerFunc {
 				Sucursal:     item.Sucursal,
 			})
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"cotizacion_id": cotizacionID,
-			"items":         itemsResponse,
-			"total_items":   len(itemsResponse),
-		})
+		c.JSON(http.StatusOK, response)
 	}
 }
 
-// POST /cotizaciones - Crear una cotización
+// POST /cotizaciones - Crear nueva cotización
 func CrearCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var request dtos.CreateCotizacionRequest
-		if err := c.BindJSON(&request); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "JSON inválido"})
-			fmt.Print("\n\t\t<<<< JSON INVALIDO AL CREAR COTIZACION >>>>\n")
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos de entrada inválidos", "details": err.Error()})
 			return
 		}
 
-		// Validar que el cliente existe
+		// Verificar que el cliente existe
 		var cliente models.Cliente
-		if err := db.First(&cliente, request.ClienteID).Error; err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Cliente no encontrado"})
-			fmt.Printf("\n\t\t<<<< CLIENTE ID %d NO ENCONTRADO >>>>\n", request.ClienteID)
+		if err := db.First(&cliente, request.RutCliente).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Cliente no encontrado"})
 			return
 		}
 
-		// Validar que el usuario existe
+		// Verificar que el usuario existe
 		var usuario models.Usuario
-		if err := db.Where("email = ?", request.UserID).First(&usuario).Error; err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Usuario no encontrado"})
-			fmt.Printf("\n\t\t<<<< USUARIO %s NO ENCONTRADO >>>>\n", request.UserID)
+		if err := db.First(&usuario, request.UserID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
 			return
 		}
 
-		// Crear la cotización
-		cotizacion := models.Cotizacion{
-			ClienteID:    request.ClienteID,
-			UserID:       request.UserID,
-			TipoDespacho: request.TipoDespacho,
-			CostoEnvio:   request.CostoEnvio,
-			Estado:       "PENDIENTE", // Estado por defecto
-		}
-
-		if err := db.Create(&cotizacion).Error; err != nil {
+		cotizacion, err := controllers.CrearCotizacion(request.RutCliente, request.UserID, request.TipoDespacho, request.CostoEnvio)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear cotización"})
-			fmt.Print("\n\t\t<<<< ERROR AL CREAR COTIZACION >>>>\n")
 			return
 		}
 
@@ -341,363 +337,181 @@ func CrearCotizacion(db *gorm.DB) gin.HandlerFunc {
 			Estado:    cotizacion.Estado,
 			Mensaje:   "Cotización creada exitosamente",
 		}
-
 		c.JSON(http.StatusCreated, response)
-		fmt.Printf("\n\t\t<<<< COTIZACION ID %d CREADA CON EXITO >>>>\n", cotizacion.ID)
 	}
 }
 
-// POST /cotizaciones/[id]/items - Agregar un producto a una cotización
+// POST /cotizaciones/:id/items - Agregar item a cotización
 func AgregarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.ParseUint(id, 10, 32)
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-
 		var request dtos.AddItemRequest
-		if err := c.BindJSON(&request); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "JSON inválido"})
-			fmt.Print("\n\t\t<<<< JSON INVALIDO AL AGREGAR ITEM >>>>\n")
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos de entrada inválidos", "details": err.Error()})
 			return
 		}
-
 		// Verificar que la cotización existe
 		var cotizacion models.Cotizacion
 		if err := db.First(&cotizacion, cotizacionID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
-			fmt.Printf("\n\t\t<<<< COTIZACION ID %s NO ENCONTRADA >>>>\n", id)
 			return
 		}
-
 		// Verificar que el producto existe
 		var producto models.Producto
 		if err := db.First(&producto, request.ProductoID).Error; err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Producto no encontrado"})
-			fmt.Printf("\n\t\t<<<< PRODUCTO ID %d NO ENCONTRADO >>>>\n", request.ProductoID)
+			c.JSON(http.StatusNotFound, gin.H{"error": "Producto no encontrado"})
 			return
 		}
-
 		// Verificar que la sucursal existe
 		var sucursal models.Sucursal
 		if err := db.First(&sucursal, request.SucursalID).Error; err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Sucursal no encontrada"})
-			fmt.Printf("\n\t\t<<<< SUCURSAL ID %d NO ENCONTRADA >>>>\n", request.SucursalID)
+			c.JSON(http.StatusNotFound, gin.H{"error": "Sucursal no encontrada"})
 			return
 		}
-
-		// Verificar stock disponible
-		var stock models.StockSucursal
-		if err := db.Where("sucursal_id = ? AND producto_id = ?", request.SucursalID, request.ProductoID).
-			First(&stock).Error; err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Producto no disponible en esta sucursal"})
-			fmt.Printf("\n\t\t<<<< PRODUCTO NO DISPONIBLE EN SUCURSAL >>>>\n")
-			return
-		}
-
-		if stock.Cantidad < request.Cantidad {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Stock insuficiente"})
-			fmt.Printf("\n\t\t<<<< STOCK INSUFICIENTE >>>>\n")
-			return
-		}
-
-		// Verificar si el item ya existe en la cotización
+		// Verificar si ya existe el item
 		var existingItem models.CotizacionItem
-		if err := db.Where("cotizacion_id = ? AND producto_id = ? AND sucursal_id = ?",
-			cotizacionID, request.ProductoID, request.SucursalID).First(&existingItem).Error; err == nil {
+		err = db.Where("cotizacion_id = ? AND producto_id = ? AND sucursal_id = ?", cotizacionID, request.ProductoID, request.SucursalID).First(&existingItem).Error
+		if err == nil {
 			// El item ya existe, actualizar cantidad
-			newCantidad := existingItem.Cantidad + request.Cantidad
-			if newCantidad > stock.Cantidad {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Stock insuficiente para la cantidad total"})
+			existingItem.Cantidad += request.Cantidad
+			if err := db.Save(&existingItem).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar item"})
 				return
 			}
-
-			if err := db.Model(&existingItem).Update("cantidad", newCantidad).Error; err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar cantidad"})
-				return
-			}
-
 			response := dtos.AddItemResponse{
-				CotizacionID: uint(cotizacionID),
-				ProductoID:   request.ProductoID,
-				SucursalID:   request.SucursalID,
-				Cantidad:     newCantidad,
+				CotizacionID: existingItem.CotizacionID,
+				ProductoID:   existingItem.ProductoID,
+				SucursalID:   existingItem.SucursalID,
+				Cantidad:     existingItem.Cantidad,
 				Mensaje:      "Cantidad actualizada exitosamente",
 			}
-
 			c.JSON(http.StatusOK, response)
-			fmt.Printf("\n\t\t<<<< CANTIDAD ACTUALIZADA EN COTIZACION ID %s >>>>\n", id)
 			return
 		}
-
-		// Crear nuevo item
-		item := models.CotizacionItem{
-			CotizacionID: uint(cotizacionID),
-			ProductoID:   request.ProductoID,
-			SucursalID:   request.SucursalID,
-			Cantidad:     request.Cantidad,
-		}
-
-		if err := db.Create(&item).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al agregar item a la cotización"})
-			fmt.Print("\n\t\t<<<< ERROR AL AGREGAR ITEM >>>>\n")
+		// Crear nuevo item usando el controlador
+		item, err := controllers.AgregarItemCotizacion(cotizacionID, request.ProductoID, request.SucursalID, request.Cantidad)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al agregar item"})
 			return
 		}
-
 		response := dtos.AddItemResponse{
-			CotizacionID: uint(cotizacionID),
-			ProductoID:   request.ProductoID,
-			SucursalID:   request.SucursalID,
-			Cantidad:     request.Cantidad,
+			CotizacionID: item.CotizacionID,
+			ProductoID:   item.ProductoID,
+			SucursalID:   item.SucursalID,
+			Cantidad:     item.Cantidad,
 			Mensaje:      "Item agregado exitosamente",
 		}
-
 		c.JSON(http.StatusCreated, response)
-		fmt.Printf("\n\t\t<<<< ITEM AGREGADO A COTIZACION ID %s >>>>\n", id)
 	}
 }
 
-// PUT /cotizaciones/[id] - Editar una cotización
+// PUT /cotizaciones/:id - Editar cotización
 func EditarCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.ParseUint(id, 10, 32)
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-
 		var request dtos.UpdateCotizacionRequest
-		if err := c.BindJSON(&request); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "JSON inválido"})
-			fmt.Print("\n\t\t<<<< JSON INVALIDO AL EDITAR COTIZACION >>>>\n")
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos de entrada inválidos", "details": err.Error()})
 			return
 		}
-
-		// Buscar la cotización
-		var cotizacion models.Cotizacion
-		if err := db.First(&cotizacion, cotizacionID).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
-			fmt.Printf("\n\t\t<<<< COTIZACION ID %s NO ENCONTRADA >>>>\n", id)
-			return
-		}
-
-		// Actualizar campos si fueron proporcionados
-		updates := make(map[string]interface{})
-		if request.Estado != nil {
-			updates["estado"] = *request.Estado
-		}
-		if request.CostoEnvio != nil {
-			updates["costo_envio"] = *request.CostoEnvio
-		}
-		if request.TipoDespacho != nil {
-			updates["tipo_despacho"] = *request.TipoDespacho
-		}
-
-		if len(updates) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "No se proporcionaron campos para actualizar"})
-			return
-		}
-
-		// Actualizar la cotización
-		if err := db.Model(&cotizacion).Updates(updates).Error; err != nil {
+		// Actualizar cotización usando el controlador
+		_, err = controllers.ActualizarCotizacion(cotizacionID, request.Estado, request.CostoEnvio, request.TipoDespacho, request.Total)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar cotización"})
-			fmt.Print("\n\t\t<<<< ERROR AL ACTUALIZAR COTIZACION >>>>\n")
 			return
 		}
-
-		// Obtener la cotización actualizada con relaciones
-		if err := db.Preload("Cliente").Preload("Usuario").Preload("Items.Producto").Preload("Items.Sucursal").
-			First(&cotizacion, cotizacionID).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener cotización actualizada"})
-			return
-		}
-
-		// Calcular totales
-		var totalItems int
-		var totalPrecio float64
-		for _, item := range cotizacion.Items {
-			totalItems += item.Cantidad
-			totalPrecio += float64(item.Cantidad) * item.Producto.Precio
-		}
-		totalPrecio += cotizacion.CostoEnvio
-
-		// Construir respuesta
-		response := dtos.CotizacionResponse{
-			ID:           cotizacion.ID,
-			FechaCrea:    cotizacion.FechaCrea,
-			Estado:       cotizacion.Estado,
-			CostoEnvio:   cotizacion.CostoEnvio,
-			ClienteID:    cotizacion.ClienteID,
-			UserID:       cotizacion.UserID,
-			TipoDespacho: cotizacion.TipoDespacho,
-			Cliente:      cotizacion.Cliente,
-			Usuario:      cotizacion.Usuario,
-			TotalItems:   totalItems,
-			TotalPrecio:  totalPrecio,
-		}
-
-		// Convertir items a respuesta
-		for _, item := range cotizacion.Items {
-			response.Items = append(response.Items, dtos.CotizacionItemResponse{
-				CotizacionID: item.CotizacionID,
-				ProductoID:   item.ProductoID,
-				SucursalID:   item.SucursalID,
-				Cantidad:     item.Cantidad,
-				Producto:     item.Producto,
-				Sucursal:     item.Sucursal,
-			})
-		}
-
-		c.JSON(http.StatusOK, response)
-		fmt.Printf("\n\t\t<<<< COTIZACION ID %s ACTUALIZADA >>>>\n", id)
+		c.JSON(http.StatusOK, gin.H{"mensaje": "Cotización actualizada exitosamente"})
 	}
 }
 
-// POST /cotizaciones/[id]/preview - Crear preview de cotización
+// POST /cotizaciones/:id/preview - Crear preview de cotización
 func CrearPreviewCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.ParseUint(id, 10, 32)
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-
+		var request dtos.PreviewCotizacionRequest
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos de entrada inválidos", "details": err.Error()})
+			return
+		}
 		// Verificar que la cotización existe
 		var cotizacion models.Cotizacion
-		if err := db.Preload("Items.Producto").Preload("Items.Sucursal").
-			First(&cotizacion, cotizacionID).Error; err != nil {
+		if err := db.Preload("Items.Producto").Preload("Items.Sucursal").First(&cotizacion, cotizacionID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
-			fmt.Printf("\n\t\t<<<< COTIZACION ID %s NO ENCONTRADA >>>>\n", id)
 			return
 		}
-
-		// Verificar que la cotización tiene items
-		if len(cotizacion.Items) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "La cotización no tiene items"})
-			fmt.Printf("\n\t\t<<<< COTIZACION SIN ITEMS >>>>\n")
-			return
-		}
-
-		// Generar token de acceso único
-		tokenBytes := make([]byte, 16)
-		rand.Read(tokenBytes)
-		tokenAcceso := hex.EncodeToString(tokenBytes)
-
-		// Calcular fecha de expiración (24 horas desde ahora)
-		fechaExpiracion := time.Now().Add(24 * time.Hour)
-
 		// Calcular totales
-		var totalPrecio float64
-		var totalConDescuento float64
-
+		var subtotal float64
 		for _, item := range cotizacion.Items {
-			// Obtener descuento de la sucursal
-			var stock models.StockSucursal
-			if err := db.Where("sucursal_id = ? AND producto_id = ?", item.SucursalID, item.ProductoID).
-				First(&stock).Error; err == nil {
-				// Aplicar descuento si existe
-				precioConDescuento := item.Producto.Precio * (1 - stock.Descuento/100)
-				totalConDescuento += float64(item.Cantidad) * precioConDescuento
-			} else {
-				totalConDescuento += float64(item.Cantidad) * item.Producto.Precio
-			}
-			totalPrecio += float64(item.Cantidad) * item.Producto.Precio
+			subtotal += float64(item.Cantidad) * item.Producto.Precio
 		}
-
-		// Agregar costo de envío
-		totalPrecio += cotizacion.CostoEnvio
-		totalConDescuento += cotizacion.CostoEnvio
-		totalFinal := totalConDescuento
-
-		// Obtener status de pago "PENDIENTE" (ID 1)
-		statusPagoID := uint(1)
-
-		// Crear preview
-		preview := models.PreviewCotizacion{
-			CotizacionID:    uint(cotizacionID),
-			TokenAcceso:     tokenAcceso,
-			FechaExpiracion: fechaExpiracion,
-			StatusPagoID:    statusPagoID,
-		}
-
-		if err := db.Create(&preview).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear preview de cotización"})
-			fmt.Print("\n\t\t<<<< ERROR AL CREAR PREVIEW >>>>\n")
+		tax := subtotal * 0.19 // IVA 19%
+		total := subtotal + tax + cotizacion.CostoEnvio
+		preview, err := controllers.CrearPreviewCotizacion(&cotizacionID, request.IssuedAt, subtotal, tax, total)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear preview"})
 			return
 		}
-
 		response := dtos.PreviewCotizacionResponse{
-			ID:                preview.ID,
-			CotizacionID:      preview.CotizacionID,
-			TokenAcceso:       preview.TokenAcceso,
-			FechaExpiracion:   preview.FechaExpiracion,
-			StatusPagoID:      preview.StatusPagoID,
-			TotalPrecio:       totalPrecio,
-			TotalConDescuento: totalConDescuento,
-			TotalFinal:        totalFinal,
-			Mensaje:           "Preview de cotización creado exitosamente",
+			ID:            preview.ID,
+			CotizacionID:  preview.CotizacionID,
+			IssuedAt:      preview.IssuedAt,
+			Subtotal:      preview.Subtotal,
+			Tax:           preview.Tax,
+			Total:         preview.Total,
+			PaymentStatus: preview.PaymentStatus,
+			StatusPagado:  preview.StatusPagado,
+			CreatedAt:     preview.CreatedAt,
+			UpdatedAt:     preview.UpdatedAt,
+			Mensaje:       "Preview creado exitosamente",
 		}
-
 		c.JSON(http.StatusCreated, response)
-		fmt.Printf("\n\t\t<<<< PREVIEW DE COTIZACION ID %s CREADO >>>>\n", id)
 	}
 }
 
-// DELETE /cotizaciones/:cotizacion_id/items/:item_id - Eliminar o disminuir cantidad de un item de una cotización
+// DELETE /cotizaciones/:id/items/:producto_id/:sucursal_id - Eliminar item de cotización
 func EliminarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		cotizacionID, err := strconv.ParseUint(c.Param("cotizacion_id"), 10, 32)
+		id := c.Param("id")
+		productoID := c.Param("producto_id")
+		sucursalID := c.Param("sucursal_id")
+		cotizacionID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-		itemID, err := strconv.ParseUint(c.Param("item_id"), 10, 32)
+		sucursalIDInt, err := strconv.Atoi(sucursalID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de item inválido"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de sucursal inválido"})
 			return
 		}
-
-		// Buscar el item
-		var item models.CotizacionItem
-		if err := db.First(&item, itemID).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Item no encontrado"})
+		// Eliminar el item usando el controlador
+		err = controllers.EliminarItemCotizacion(cotizacionID, productoID, sucursalIDInt)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar item"})
 			return
 		}
-		if item.CotizacionID != uint(cotizacionID) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "El item no pertenece a la cotización indicada"})
-			return
-		}
-
-		// Leer cantidad opcional
-		var body struct {
-			Cantidad *int `json:"cantidad"`
-		}
-		_ = c.ShouldBindJSON(&body)
-
-		if body.Cantidad == nil || *body.Cantidad >= item.Cantidad {
-			// Eliminar el item completo
-			if err := db.Delete(&item).Error; err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar el item"})
-				return
-			}
-			c.JSON(http.StatusOK, gin.H{"mensaje": "Item eliminado de la cotización"})
-			return
-		}
-
-		// Disminuir cantidad
-		nuevaCantidad := item.Cantidad - *body.Cantidad
-		if err := db.Model(&item).Update("cantidad", nuevaCantidad).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar la cantidad del item"})
-			return
-		}
-		item.Cantidad = nuevaCantidad
-		c.JSON(http.StatusOK, gin.H{
-			"mensaje": "Cantidad actualizada",
-			"item":    item,
-		})
+		c.JSON(http.StatusOK, gin.H{"mensaje": "Item eliminado exitosamente"})
 	}
+}
+
+// Función auxiliar para generar token
+func generateToken() string {
+	bytes := make([]byte, 16)
+	rand.Read(bytes)
+	return hex.EncodeToString(bytes)
 }

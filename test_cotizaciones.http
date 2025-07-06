@@ -2,17 +2,65 @@
 @baseUrl = http://localhost:8080
 
 ### =============================
-### PUT /api/cotizaciones/{id}
-### Editar solo el estado
+### GET /cotizaciones
+### Obtener todas las cotizaciones simplificadas
+GET {{baseUrl}}/api/cotizaciones
+
+### =============================
+### GET /cotizaciones/{id}
+### Obtener cotización simplificada por ID
+GET {{baseUrl}}/api/cotizaciones/1
+
+### =============================
+### GET /cotizaciones/completas
+### Obtener todas las cotizaciones completas
+GET {{baseUrl}}/api/cotizaciones/completas
+
+### =============================
+### GET /cotizaciones/completa/{id}
+### Obtener cotización completa por ID
+GET {{baseUrl}}/api/cotizaciones/completa/1
+
+### =============================
+### POST /cotizaciones
+### Crear una nueva cotización
+### Nota: rut_cliente debe existir en la tabla clientes
+### Nota: user_id debe existir en la tabla usuarios
+POST {{baseUrl}}/api/cotizaciones
+Content-Type: application/json
+
+{
+  "rut_cliente": "12345678-9",
+  "user_id": "vendedor2@ferreteria.cl",
+  "tipo_despacho": "a domicilio",
+  "costo_envio": 10000.00
+}
+
+### =============================
+### POST /cotizaciones
+### Crear otra cotización con datos diferentes
+POST {{baseUrl}}/api/cotizaciones
+Content-Type: application/json
+
+{
+  "rut_cliente": "12345678-9",
+  "user_id": "vendedor2@ferreteria.cl",
+  "tipo_despacho": "retiro en tienda",
+  "costo_envio": 0.00
+}
+
+### =============================
+### PUT /cotizaciones/{id}
+### Editar solo el estado de una cotización
 PUT {{baseUrl}}/api/cotizaciones/1
 Content-Type: application/json
 
 {
-  "estado": "APROBADA"
+  "estado": "pendiente"
 }
 
 ### =============================
-### PUT /api/cotizaciones/{id}
+### PUT /cotizaciones/{id}
 ### Editar solo el costo de envío
 PUT {{baseUrl}}/api/cotizaciones/1
 Content-Type: application/json
@@ -22,85 +70,250 @@ Content-Type: application/json
 }
 
 ### =============================
-### PUT /api/cotizaciones/{id}
+### PUT /cotizaciones/{id}
 ### Editar solo el tipo de despacho
 PUT {{baseUrl}}/api/cotizaciones/1
 Content-Type: application/json
 
 {
-  "tipo_despacho": "EXPRESS"
+  "tipo_despacho": "express"
 }
 
 ### =============================
-### PUT /api/cotizaciones/{id}
+### PUT /cotizaciones/{id}
 ### Editar varios campos a la vez
 PUT {{baseUrl}}/api/cotizaciones/1
 Content-Type: application/json
 
 {
-  "estado": "CANCELADA",
-  "costo_envio": 0,
-  "tipo_despacho": "ESTANDAR"
+  "estado": "confirmada",
+  "costo_envio": 7500.00,
+  "tipo_despacho": "a domicilio",
+  "total": 150000.00
 }
 
 ### =============================
-### POST /api/quotations
-### Crear una quotation
-POST {{baseUrl}}/api/cotizaciones
-Content-Type: application/json
-
-{
-  "cliente_id": 1,
-  "user_id": "vendedor1@empresa.com",
-  "tipo_despacho": "EXPRESS",
-  "costo_envio": 10000.00
-}
-
-### =============================
-### POST /api/quotations/{id}/items
-### Agregar item a quotation (ejemplo para id=1)
+### POST /cotizaciones/{id}/items
+### Agregar item a cotización
+### Nota: producto_id es el SKU del producto (string)
+### Nota: sucursal_id debe existir en la tabla sucursales
 POST {{baseUrl}}/api/cotizaciones/1/items
 Content-Type: application/json
 
 {
-  "producto_id": 4,
+  "producto_id": "H001",
+  "sucursal_id": 1,
+  "cantidad": 2
+}
+
+### =============================
+### POST /cotizaciones/{id}/items
+### Agregar otro item a la misma cotización
+POST {{baseUrl}}/api/cotizaciones/1/items
+Content-Type: application/json
+
+{
+  "producto_id": "H002",
   "sucursal_id": 1,
   "cantidad": 1
 }
 
 ### =============================
-### PUT /api/quotations/{id}
-### Editar quotation (ejemplo para id=1)
-PUT {{baseUrl}}/api/cotizaciones/1
+### POST /cotizaciones/{id}/items
+### Agregar item desde otra sucursal
+POST {{baseUrl}}/api/cotizaciones/1/items
 Content-Type: application/json
 
 {
-  "estado": "APROBADA",
-  "costo_envio": 7500.00,
-  "tipo_despacho": "EXPRESS"
+  "producto_id": "H003",
+  "sucursal_id": 2,
+  "cantidad": 3
 }
 
 ### =============================
-### GET /api/cotizaciones/{id}/items
-### Obtener items de una cotización (ejemplo para id=1)
+### GET /cotizaciones/{id}/items
+### Obtener items completos de una cotización
 GET {{baseUrl}}/api/cotizaciones/1/items
 
 ### =============================
-### GET /api/cotizaciones/{id}/items/simple
-### Obtener items simples de una cotización (ejemplo para id=1)
-GET {{baseUrl}}/api/cotizaciones/1/items/simple
+### GET /cotizaciones/{id}/items/simples
+### Obtener items simples de una cotización
+GET {{baseUrl}}/api/cotizaciones/1/items/simples
 
 ### =============================
-### DELETE /api/cotizaciones/{cotizacion_id}/items/{item_id}
-### Eliminar el item completo
-DELETE {{baseUrl}}/api/cotizaciones/1/items/1
+### DELETE /cotizaciones/{id}/items/{producto_id}/{sucursal_id}
+### Eliminar item específico de cotización
+### Nota: producto_id es el SKU (string), sucursal_id es número
+DELETE {{baseUrl}}/api/cotizaciones/1/items/H001/1
 
 ### =============================
-### DELETE /api/cotizaciones/{cotizacion_id}/items/{item_id}
-### Disminuir la cantidad del item (por ejemplo, restar 2 unidades)
-DELETE {{baseUrl}}/api/cotizaciones/1/items/1
+### DELETE /cotizaciones/{id}/items/{producto_id}/{sucursal_id}
+### Eliminar otro item de cotización
+DELETE {{baseUrl}}/api/cotizaciones/1/items/H002/1
+
+### =============================
+### POST /cotizaciones/{id}/preview
+### Crear preview de cotización
+### 
+### ¿Qué hace este endpoint?
+### - Permite generar una previsualización (preview) de la cotización antes de finalizarla o facturarla.
+### - Calcula y muestra los totales (subtotal, impuestos, total) a partir de los ítems de la cotización.
+### - Guarda un registro temporal del estado de la cotización en la tabla preview_cotizacion.
+### - Es útil para mostrar un resumen al cliente, enviar por correo, generar PDF o auditar cambios antes de la confirmación.
+### 
+### ¿Cómo funciona?
+### - Puedes enviar solo la fecha de emisión (issued_at) y el backend calculará los totales automáticamente.
+### - Si envías subtotal, tax o total, el backend usará esos valores (útil para pruebas o ajustes manuales).
+### - El preview queda asociado a la cotización y puedes consultarlo después.
+### 
+### Ejemplo de request mínimo (totales automáticos):
+### POST {{baseUrl}}/api/cotizaciones/1/preview
+### Content-Type: application/json
+### {
+###   "issued_at": "2024-06-01T12:00:00Z"
+### }
+### 
+### Ejemplo de request con totales personalizados:
+### POST {{baseUrl}}/api/cotizaciones/1/preview
+### Content-Type: application/json
+### {
+###   "issued_at": "2024-06-01T12:00:00Z",
+###   "subtotal": 150000.00,
+###   "tax": 28500.00,
+###   "total": 178500.00
+### }
+### 
+### Ejemplo de respuesta:
+### {
+###   "id": 5,
+###   "cotizacion_id": 1,
+###   "issued_at": "2024-06-01T12:00:00Z",
+###   "subtotal": 150000,
+###   "tax": 28500,
+###   "total": 178500,
+###   "payment_status": "pendiente",
+###   "status_pagado": false,
+###   "mensaje": "Preview generado correctamente"
+### }
+
+### =============================
+### POST /cotizaciones/{id}/preview
+### Crear preview con valores automáticos
+POST {{baseUrl}}/api/cotizaciones/1/preview
 Content-Type: application/json
 
 {
-  "cantidad": 2
+  "issued_at": "2024-01-15T14:30:00Z"
 }
+
+### =============================
+### PRUEBAS DE ERRORES Y VALIDACIONES
+### =============================
+
+### =============================
+### POST /cotizaciones
+### Intentar crear cotización con cliente inexistente (debe fallar)
+POST {{baseUrl}}/api/cotizaciones
+Content-Type: application/json
+
+{
+  "rut_cliente": "CLIENTE-INEXISTENTE",
+  "user_id": "vendedor2@ferreteria.cl",
+  "tipo_despacho": "a domicilio",
+  "costo_envio": 10000.00
+}
+
+### =============================
+### POST /cotizaciones
+### Intentar crear cotización con usuario inexistente (debe fallar)
+POST {{baseUrl}}/api/cotizaciones
+Content-Type: application/json
+
+{
+  "rut_cliente": "12345678-9",
+  "user_id": "usuario-inexistente@empresa.com",
+  "tipo_despacho": "a domicilio",
+  "costo_envio": 10000.00
+}
+
+### =============================
+### POST /cotizaciones/{id}/items
+### Intentar agregar item con producto inexistente (debe fallar)
+POST {{baseUrl}}/api/cotizaciones/1/items
+Content-Type: application/json
+
+{
+  "producto_id": "PRODUCTO-INEXISTENTE",
+  "sucursal_id": 1,
+  "cantidad": 1
+}
+
+### =============================
+### POST /cotizaciones/{id}/items
+### Intentar agregar item con sucursal inexistente (debe fallar)
+POST {{baseUrl}}/api/cotizaciones/1/items
+Content-Type: application/json
+
+{
+  "producto_id": "H001",
+  "sucursal_id": 999,
+  "cantidad": 1
+}
+
+### =============================
+### POST /cotizaciones/{id}/items
+### Intentar agregar item con cantidad inválida (debe fallar)
+POST {{baseUrl}}/api/cotizaciones/1/items
+Content-Type: application/json
+
+{
+  "producto_id": "H001",
+  "sucursal_id": 1,
+  "cantidad": 0
+}
+
+### =============================
+### GET /cotizaciones/{id}
+### Intentar obtener cotización inexistente (debe fallar)
+GET {{baseUrl}}/api/cotizaciones/999
+
+### =============================
+### PUT /cotizaciones/{id}
+### Intentar editar cotización inexistente (debe fallar)
+PUT {{baseUrl}}/api/cotizaciones/999
+Content-Type: application/json
+
+{
+  "estado": "pendiente"
+}
+
+### =============================
+### NOTAS IMPORTANTES
+### =============================
+### 
+### 1. ENDPOINTS DISPONIBLES:
+###    - GET /api/cotizaciones - Listar simplificadas
+###    - GET /api/cotizaciones/{id} - Obtener simplificada
+###    - GET /api/cotizaciones/completas - Listar completas
+###    - GET /api/cotizaciones/completa/{id} - Obtener completa
+###    - POST /api/cotizaciones - Crear cotización
+###    - PUT /api/cotizaciones/{id} - Editar cotización
+###    - POST /api/cotizaciones/{id}/items - Agregar item
+###    - GET /api/cotizaciones/{id}/items - Obtener items completos
+###    - GET /api/cotizaciones/{id}/items/simples - Obtener items simples
+###    - DELETE /api/cotizaciones/{id}/items/{producto_id}/{sucursal_id} - Eliminar item
+###    - POST /api/cotizaciones/{id}/preview - Crear preview
+### 
+### 2. VALIDACIONES IMPLEMENTADAS:
+###    - Verificación de existencia de cliente antes de crear cotización
+###    - Verificación de existencia de usuario antes de crear cotización
+###    - Verificación de existencia de producto antes de agregar item
+###    - Verificación de existencia de sucursal antes de agregar item
+###    - Validación de cantidad mínima en items
+### 
+### 3. CÓDIGOS DE RESPUESTA:
+###    - 200: Operación exitosa
+###    - 201: Recurso creado exitosamente
+###    - 400: Datos de entrada inválidos
+###    - 404: Recurso no encontrado
+###    - 500: Error interno del servidor
