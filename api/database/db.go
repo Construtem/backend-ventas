@@ -1,16 +1,13 @@
 package database
 
 import (
-	"backend-ventas/api/models"
-
 	"fmt"
 	"log"
 	"os"
 	"time"
 
-	_ "github.com/joho/godotenv/autoload" // Carga automática del archivo .env
-	"gorm.io/driver/postgres"             // Driver de PostgreSQL
-	"gorm.io/gorm"                        // ORM de GORM
+	"gorm.io/driver/postgres" // Driver de PostgreSQL
+	"gorm.io/gorm"            // ORM de GORM
 )
 
 var DB *gorm.DB
@@ -53,11 +50,40 @@ func InitDB() {
 
 	log.Println("Conexión a la base de datos establecida exitosamente.")
 
-	migrationErr := DB.AutoMigrate(&models.Usuario{}, &models.Cliente{})
+	// Migración automática de todos los modelos - TEMPORALMENTE DESHABILITADA
+	/*
+		migrationErr := DB.AutoMigrate(
+			&models.Usuario{},
+			&models.Cliente{},
+			&models.TipoCliente{},
+			&models.DirCliente{},
+			&models.Cotizacion{},
+			&models.CotizacionItem{},
+			&models.PreviewCotizacion{},
+			&models.PaymentIntent{},
+			&models.Producto{},
+			&models.Categoria{},
+			&models.Sucursal{},
+			&models.TipoSucursal{},
+			&models.StockSucursal{},
+			&models.Rol{},
+			&models.Factura{},
+			&models.TipoCamion{},
+			&models.Camion{},
+			&models.Despacho{},
+			&models.ProductoDespacho{},
+			&models.Proveedor{},
+			&models.StockProveedor{},
+		)
 
-	if migrationErr != nil {
-		log.Fatalf("Fallo la automigración de la base de datos: %v", err)
-	}
+		if migrationErr != nil {
+			log.Fatalf("Fallo la automigración de la base de datos: %v", migrationErr)
+		}
+
+		log.Println("Migración automática completada exitosamente.")
+	*/
+
+	log.Println("Migración automática deshabilitada temporalmente.")
 }
 
 // CloseDB cierra la conexión a la base de datos subyacente de GORM
