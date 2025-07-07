@@ -69,7 +69,7 @@ type Cotizacion struct {
 	Total        *float64  `json:"total"`
 
 	// Relaciones
-	Cliente  *Cliente            `gorm:"foreignKey:RutCliente" json:"cliente,omitempty"`
+	Cliente  *Cliente            `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`
 	Usuario  *Usuario            `gorm:"foreignKey:UserID" json:"usuario,omitempty"`
 	Items    []CotizacionItem    `gorm:"foreignKey:CotizacionID" json:"items,omitempty"`
 	Previews []PreviewCotizacion `gorm:"foreignKey:CotizacionID" json:"previews,omitempty"`

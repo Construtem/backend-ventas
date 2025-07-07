@@ -25,6 +25,7 @@ func obtenerClientes(c *gin.Context) {
 	if err := database.DB.Find(&clientes).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener clientes"})
 		fmt.Print("\n\t\t<<<< ERROR AL OBTERE CLIENTES >>>>\n")
+		fmt.Printf("Error: %v", err)
 		return
 	}
 	c.JSON(http.StatusOK, clientes)

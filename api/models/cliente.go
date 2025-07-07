@@ -8,9 +8,9 @@ import (
 type Cliente struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
 	Nombre      string    `gorm:"not null" json:"nombre"`
-	Telefono    string    `json:"telefono"`
-	Email       string    `gorm:"uniqueIndex" json:"email"`
-	RazonSocial string    `gorm:"column:razon_social" json:"razon_social"`
+	Telefono    *string   `json:"telefono"`
+	Email       *string   `gorm:"uniqueIndex" json:"email"`
+	RazonSocial *string   `gorm:"column:razon_social" json:"razon_social"`
 	Rut         string    `gorm:"uniqueIndex:uni_clientes_rut;not null" json:"rut"`
 	TipoID      uint      `gorm:"column:tipo_id;not null" json:"tipo_id"`
 	//CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
@@ -19,7 +19,7 @@ type Cliente struct {
 	// Relaciones
 	TipoCliente  *TipoCliente `gorm:"foreignKey:TipoID" json:"tipo_cliente,omitempty"`
 	Direcciones  []DirCliente `gorm:"foreignKey:ClienteID" json:"direcciones,omitempty"`
-	Cotizaciones []Cotizacion `gorm:"foreignKey:ClienteID" json:"cotizaciones,omitempty"`
+	Cotizaciones []Cotizacion `gorm:"foreignKey:RutCliente" json:"cotizaciones,omitempty"`
 }
 
 // TableName especifica el nombre de la tabla en la base de datos

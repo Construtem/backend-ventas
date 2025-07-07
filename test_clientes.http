@@ -18,16 +18,12 @@ Content-Type: application/json
 
 ### 🟡 PATCH - Actualizar cliente con ID X
 ### Para conservar los mismos datos poner ""
-PATCH http://localhost:8080/clientes/6
+PATCH http://localhost:8080/clientes/7
 Content-Type: application/json
 
 {
-  "nombre": "",
-  "rut": "20667647-7",
-  "correo": "",
-  "telefono": "",
-  "region_comuna": ""
+  "rut": "20667647-7"
 }
 
 ### 🟡 DELETE - Borrar cliente con ID X
-DELETE http://localhost:8080/clientes/6
+DELETE http://localhost:8080/clientes/7
