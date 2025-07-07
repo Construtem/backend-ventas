@@ -14,13 +14,17 @@ services:
 
     environment:
       # --- ¡CAMBIO CLAVE AQUÍ PARA DB EXTERNA! ---
-      DB_HOST: host.docker.internal # <--- En Docker Desktop (Windows/macOS)
+      #DB_HOST: host.docker.internal # <--- En Docker Desktop (Windows/macOS)
+      DB_HOST: aws-0-sa-east-1.pooler.supabase.com
       # DB_HOST: 172.17.0.1         # <--- Alternativa para Linux (puede variar, ver "Más sobre DB_HOST" abajo)
       # DB_HOST: TU_IP_DE_MAQUINA  # <--- Otra alternativa, si tu IP es estática y el firewall lo permite
 
       DB_PORT: 5432 # <--- El puerto en el que tu PostgreSQL externo está escuchando (generalmente 5432)
-      DB_USER: postgres # Tu usuario de DB (el de tu DB externa)
-      DB_PASSWORD: 123456789 # Tu contraseña de DB (la de tu DB externa)
-      DB_NAME: test-db # El nombre de tu DB externa
-      DB_SSLMODE: disable # Usualmente 'disable' para desarrollo local
-      JWT_SECRET_KEY: 101010101010 # Tu clave secreta JWT
+      DB_USER: postgres.htywykpuelkslihfipsu # Tu usuario de DB (el de tu DB externa)
+      DB_PASSWORD: jqrV9vqfuxGfUlw6 # Tu contraseña de DB (la de tu DB externa)
+      DB_NAME: postgres # El nombre de tu DB externa
+      DB_SSLMODE: require # Usualmente 'disable' para desarrollo local
+
+      # Configuración del servidor
+      PORT: 8080
+      GIN_MODE: debug

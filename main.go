@@ -1,26 +1,32 @@
 package main
 
 import (
-	"backend-ventas/db"
-	"backend-ventas/routes"
+	"backend-ventas/api/database"
+	//"backend-ventas/api/routes"
+
+	apiRoutes "backend-ventas/api/routes"
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	
 	router := gin.Default()
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
 
-	db.Conectar() // conecta la base de datos desde la funcion Conectar() del archivo db.go
-	routes.ClienteRoutes(router) 
+	// Conectar a la base de datos
+	database.InitDB()
 
-	puerto := ":8080"
-	router.Run(puerto) // listen and serve on 0.0.0.0:8080
-	fmt.Print("\n\n\t\t>>>>> Corriendo en localhost:", puerto ,"!!!\n\n")
+	// Configurar todas las rutas usando SetupRoutes
+	apiRoutes.SetupRoutes(router)
+	apiRoutes.ClienteRoutes(router) 
+
+	// Obtener puerto desde variables de entorno o usar 8080 por defecto
+	puerto := os.Getenv("PORT")
+	if puerto == "" {
+		puerto = "8080"
+	}
+
+	router.Run(":" + puerto) // listen and serve on 0.0.0.0:puerto
+	fmt.Printf("\n\n\t\t>>>>> Servidor corriendo en localhost:%s !!!\n\n", puerto)
 }

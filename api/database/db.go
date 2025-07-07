@@ -53,10 +53,10 @@ func InitDB() {
 
 	log.Println("Conexión a la base de datos establecida exitosamente.")
 
-	migrationErr := DB.AutoMigrate(&models.Usuario{}, &models.Cliente{})
+	migrationErr := DB.AutoMigrate(&models.Usuario{})
 
 	if migrationErr != nil {
-		log.Fatalf("Fallo la automigración de la base de datos: %v", err)
+		log.Fatalf("Fallo la automigración de la base de datos: %v", migrationErr)
 	}
 }
 
