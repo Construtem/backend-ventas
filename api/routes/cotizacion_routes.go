@@ -17,13 +17,13 @@ func CotizacionRoutes(r *gin.Engine) {
 		cotizaciones.GET(":id", handlers.ObtenerCotizacionSimplificada(database.DB))
 		cotizaciones.PUT(":id", handlers.ActualizarCotizacion(database.DB))
 		cotizaciones.PATCH(":id/estado", middleware.AuthRoles("gerente"), handlers.ActualizarEstadoCotizacion(database.DB))
-		cotizaciones.GET(":id/items", handlers.ObtenerItemsCotizacion(database.DB))
+		cotizaciones.GET(":id/items", handlers.ObtenerItemsCotizacion(database.DB)) // devuelve null
 		cotizaciones.POST(":id/items", handlers.AgregarItemCotizacion(database.DB))
 		cotizaciones.POST(":id/preview", handlers.CrearPreviewCotizacion(database.DB))
 		cotizaciones.GET("completas", handlers.ObtenerCotizaciones(database.DB))
 		cotizaciones.GET("completa/:id", handlers.ObtenerCotizacionPorID(database.DB))
 		cotizaciones.GET(":id/historial", handlers.ObtenerCotizacionesPorClienteID(database.DB))
-		cotizaciones.GET(":id/items/simple", handlers.ObtenerItemsSimplesCotizacion(database.DB))
+		cotizaciones.GET(":id/items/simple", handlers.ObtenerItemsSimplesCotizacion(database.DB)) //devuelve null
 		cotizaciones.DELETE(":id/items/:producto_id/:sucursal_id", handlers.EliminarItemCotizacion(database.DB))
 	}
 }

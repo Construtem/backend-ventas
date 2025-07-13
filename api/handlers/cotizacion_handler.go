@@ -35,6 +35,7 @@ func safeAppendItemResponse(dst *[]dtos.CotizacionItemResponse, it models.Cotiza
 }
 
 // GET /cotizaciones - Obtener todas las cotizaciones simplificadas
+
 func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cotizaciones, err := controllers.ListarCotizacionesSimples()
@@ -42,125 +43,133 @@ func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener cotizaciones"})
 			return
 		}
-		// Calcular totales y armar respuesta simplificada
+
 		var result []dtos.CotizacionSimplificadaResponse
-		for _, cotizacion := range cotizaciones {
+		for _, cot := range cotizaciones {
 			var totalItems int
 			var totalPrecio float64
-			for _, item := range cotizacion.Items {
-				totalItems += item.Cantidad
-				totalPrecio += float64(item.Cantidad) * item.Producto.Precio
+			for _, it := range cot.Items {
+				addItemTotals(it, &totalItems, &totalPrecio)
 			}
-			totalPrecio += cotizacion.CostoEnvio
-			// Al armar la respuesta simplificada, incluir el ID
-			simplificada := dtos.CotizacionSimplificadaResponse{
-				ID:           cotizacion.ID,
-				FechaCrea:    cotizacion.FechaCrea,
-				Estado:       cotizacion.Estado,
-				CostoEnvio:   cotizacion.CostoEnvio,
-				UserID:       cotizacion.UserID,
-				Nombre:       "",
-				TipoDespacho: cotizacion.TipoDespacho,
+			totalPrecio += cot.CostoEnvio
+
+			res := dtos.CotizacionSimplificadaResponse{
+				ID:           cot.ID,
+				FechaCrea:    cot.FechaCrea,
+				Estado:       cot.Estado,
+				CostoEnvio:   cot.CostoEnvio,
+				UserID:       cot.UserID,
+				TipoDespacho: cot.TipoDespacho,
 				TotalItems:   totalItems,
 				TotalPrecio:  totalPrecio,
 			}
-			if cotizacion.Usuario != nil {
-				simplificada.Nombre = cotizacion.Usuario.Nombre
+
+			if cot.Usuario != nil {
+				res.Nombre = cot.Usuario.Nombre
 			}
-			if cotizacion.Cliente != nil {
-				simplificada.Cliente.Nombre = cotizacion.Cliente.Nombre
-				if cotizacion.Cliente.Telefono != nil {
-					simplificada.Cliente.Telefono = *cotizacion.Cliente.Telefono
+			if cl := cot.Cliente; cl != nil {
+				res.Cliente.Rut = cl.Rut
+				res.Cliente.Nombre = cl.Nombre
+				if cl.Telefono != nil {
+					res.Cliente.Telefono = *cl.Telefono
 				}
-				if cotizacion.Cliente.Email != nil {
-					simplificada.Cliente.Email = *cotizacion.Cliente.Email
+				if cl.Email != nil {
+					res.Cliente.Email = *cl.Email
 				}
-				simplificada.Cliente.Rut = cotizacion.Cliente.Rut
-				if cotizacion.Cliente.RazonSocial != nil {
-					simplificada.Cliente.RazonSocial = *cotizacion.Cliente.RazonSocial
+				if cl.RazonSocial != nil {
+					res.Cliente.RazonSocial = *cl.RazonSocial
 				}
 			}
-			for _, item := range cotizacion.Items {
-				simplificada.Items = append(simplificada.Items, struct {
+
+			for _, it := range cot.Items {
+				if it.Producto == nil {
+					continue
+				}
+				res.Items = append(res.Items, struct {
 					SKU      string `json:"sku"`
 					Nombre   string `json:"nombre"`
 					Cantidad int    `json:"cantidad"`
 				}{
-					SKU:      item.Producto.SKU,
-					Nombre:   item.Producto.Nombre,
-					Cantidad: item.Cantidad,
+					SKU:      it.Producto.SKU,
+					Nombre:   it.Producto.Nombre,
+					Cantidad: it.Cantidad,
 				})
 			}
-			result = append(result, simplificada)
+			result = append(result, res)
 		}
 		c.JSON(http.StatusOK, result)
 	}
 }
 
 // GET /cotizaciones/:id - Obtener detalle simplificado
+
 func ObtenerCotizacionSimplificada(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		cotizacionID, err := strconv.Atoi(id)
+		cotID, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
 			return
 		}
-		cotizacion, err := controllers.ObtenerCotizacionSimplePorID(cotizacionID)
+		cot, err := controllers.ObtenerCotizacionSimplePorID(cotID)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
 			return
 		}
+
 		var totalItems int
 		var totalPrecio float64
-		for _, item := range cotizacion.Items {
-			totalItems += item.Cantidad
-			totalPrecio += float64(item.Cantidad) * item.Producto.Precio
+		for _, it := range cot.Items {
+			addItemTotals(it, &totalItems, &totalPrecio)
 		}
-		totalPrecio += cotizacion.CostoEnvio
-		response := dtos.CotizacionSimplificadaResponse{
-			ID:           cotizacion.ID,
-			FechaCrea:    cotizacion.FechaCrea,
-			Estado:       cotizacion.Estado,
-			CostoEnvio:   cotizacion.CostoEnvio,
-			UserID:       cotizacion.UserID,
-			Nombre:       "",
-			TipoDespacho: cotizacion.TipoDespacho,
+		totalPrecio += cot.CostoEnvio
+
+		res := dtos.CotizacionSimplificadaResponse{
+			ID:           cot.ID,
+			FechaCrea:    cot.FechaCrea,
+			Estado:       cot.Estado,
+			CostoEnvio:   cot.CostoEnvio,
+			UserID:       cot.UserID,
+			TipoDespacho: cot.TipoDespacho,
 			TotalItems:   totalItems,
 			TotalPrecio:  totalPrecio,
 		}
-		if cotizacion.Usuario != nil {
-			response.Nombre = cotizacion.Usuario.Nombre
+		if cot.Usuario != nil {
+			res.Nombre = cot.Usuario.Nombre
 		}
-		if cotizacion.Cliente != nil {
-			response.Cliente.Nombre = cotizacion.Cliente.Nombre
-			if cotizacion.Cliente.Telefono != nil {
-				response.Cliente.Telefono = *cotizacion.Cliente.Telefono
+		if cl := cot.Cliente; cl != nil {
+			res.Cliente.Rut = cl.Rut
+			res.Cliente.Nombre = cl.Nombre
+			if cl.Telefono != nil {
+				res.Cliente.Telefono = *cl.Telefono
 			}
-			if cotizacion.Cliente.Email != nil {
-				response.Cliente.Email = *cotizacion.Cliente.Email
+			if cl.Email != nil {
+				res.Cliente.Email = *cl.Email
 			}
-			response.Cliente.Rut = cotizacion.Cliente.Rut
-			if cotizacion.Cliente.RazonSocial != nil {
-				response.Cliente.RazonSocial = *cotizacion.Cliente.RazonSocial
+			if cl.RazonSocial != nil {
+				res.Cliente.RazonSocial = *cl.RazonSocial
 			}
 		}
-		for _, item := range cotizacion.Items {
-			response.Items = append(response.Items, struct {
+		for _, it := range cot.Items {
+			if it.Producto == nil {
+				continue
+			}
+			res.Items = append(res.Items, struct {
 				SKU      string `json:"sku"`
 				Nombre   string `json:"nombre"`
 				Cantidad int    `json:"cantidad"`
 			}{
-				SKU:      item.Producto.SKU,
-				Nombre:   item.Producto.Nombre,
-				Cantidad: item.Cantidad,
+				SKU:      it.Producto.SKU,
+				Nombre:   it.Producto.Nombre,
+				Cantidad: it.Cantidad,
 			})
 		}
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, res)
 	}
 }
 
 // GET /cotizaciones/completas - Obtener todas las cotizaciones completas
+
 func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cotizaciones, err := controllers.ListarCotizacionesCompletas()
@@ -168,43 +177,37 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener cotizaciones"})
 			return
 		}
-		var response []dtos.CotizacionResponse
-		for _, cotizacion := range cotizaciones {
+
+		var resp []dtos.CotizacionResponse
+		for _, cot := range cotizaciones {
 			var totalItems int
 			var totalPrecio float64
-			for _, item := range cotizacion.Items {
-				totalItems += item.Cantidad
-				totalPrecio += float64(item.Cantidad) * item.Producto.Precio
+			for _, it := range cot.Items {
+				addItemTotals(it, &totalItems, &totalPrecio)
 			}
-			totalPrecio += cotizacion.CostoEnvio
-			cotizacionResponse := dtos.CotizacionResponse{
-				ID:           cotizacion.ID,
-				FechaCrea:    cotizacion.FechaCrea,
-				Estado:       cotizacion.Estado,
-				CostoEnvio:   cotizacion.CostoEnvio,
-				RutCliente:   cotizacion.RutCliente,
-				UserID:       cotizacion.UserID,
-				TipoDespacho: cotizacion.TipoDespacho,
-				Total:        cotizacion.Total,
-				Descripcion:  cotizacion.Descripcion,
-				Cliente:      cotizacion.Cliente,
-				Usuario:      cotizacion.Usuario,
+			totalPrecio += cot.CostoEnvio
+
+			cr := dtos.CotizacionResponse{
+				ID:           cot.ID,
+				FechaCrea:    cot.FechaCrea,
+				Estado:       cot.Estado,
+				CostoEnvio:   cot.CostoEnvio,
+				RutCliente:   cot.RutCliente,
+				UserID:       cot.UserID,
+				TipoDespacho: cot.TipoDespacho,
+				Total:        cot.Total,
+				Descripcion:  cot.Descripcion,
+				Cliente:      cot.Cliente,
+				Usuario:      cot.Usuario,
 				TotalItems:   totalItems,
 				TotalPrecio:  totalPrecio,
 			}
-			for _, item := range cotizacion.Items {
-				cotizacionResponse.Items = append(cotizacionResponse.Items, dtos.CotizacionItemResponse{
-					CotizacionID: item.CotizacionID,
-					ProductoID:   item.ProductoID,
-					SucursalID:   item.SucursalID,
-					Cantidad:     item.Cantidad,
-					Producto:     item.Producto,
-					Sucursal:     item.Sucursal,
-				})
+			for _, it := range cot.Items {
+				safeAppendItemResponse(&cr.Items, it)
 			}
-			response = append(response, cotizacionResponse)
+			resp = append(resp, cr)
 		}
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, resp)
 	}
 }
 
@@ -212,51 +215,47 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 func ObtenerCotizacionesPorClienteID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rut := c.Param("id")
-		clienteID := rut
-		if clienteID == "" {
+		if rut == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Rut del cliente inválido"})
+			return
 		}
-		cortizaciones, err := controllers.ObtenerCotizacionesPorClienteID(clienteID)
+		cots, err := controllers.ObtenerCotizacionesPorClienteID(rut)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Cotizaciones no encontradas"})
+			return
 		}
-		var response []dtos.CotizacionResponse
-		for _, cotizacion := range cortizaciones {
+
+		resp := make([]dtos.CotizacionResponse, 0)
+		for _, cot := range cots {
 			var totalItems int
 			var totalPrecio float64
-			for _, item := range cotizacion.Items {
-				totalItems += item.Cantidad
-				totalPrecio += float64(item.Cantidad) * item.Producto.Precio
+			for _, it := range cot.Items {
+				addItemTotals(it, &totalItems, &totalPrecio)
 			}
-			totalPrecio += cotizacion.CostoEnvio
-			cotizacionResponse := dtos.CotizacionResponse{
-				ID:           cotizacion.ID,
-				FechaCrea:    cotizacion.FechaCrea,
-				Estado:       cotizacion.Estado,
-				CostoEnvio:   cotizacion.CostoEnvio,
-				RutCliente:   cotizacion.RutCliente,
-				UserID:       cotizacion.UserID,
-				TipoDespacho: cotizacion.TipoDespacho,
-				Total:        cotizacion.Total,
-				Descripcion:  cotizacion.Descripcion,
-				Cliente:      cotizacion.Cliente,
-				Usuario:      cotizacion.Usuario,
+			totalPrecio += cot.CostoEnvio
+
+			cr := dtos.CotizacionResponse{
+				ID:           cot.ID,
+				FechaCrea:    cot.FechaCrea,
+				Estado:       cot.Estado,
+				CostoEnvio:   cot.CostoEnvio,
+				RutCliente:   cot.RutCliente,
+				UserID:       cot.UserID,
+				TipoDespacho: cot.TipoDespacho,
+				Total:        cot.Total,
+				Descripcion:  cot.Descripcion,
+				Cliente:      cot.Cliente,
+				Usuario:      cot.Usuario,
 				TotalItems:   totalItems,
 				TotalPrecio:  totalPrecio,
+				Items:        make([]dtos.CotizacionItemResponse, 0),
 			}
-			for _, item := range cotizacion.Items {
-				cotizacionResponse.Items = append(cotizacionResponse.Items, dtos.CotizacionItemResponse{
-					CotizacionID: item.CotizacionID,
-					ProductoID:   item.ProductoID,
-					SucursalID:   item.SucursalID,
-					Cantidad:     item.Cantidad,
-					Producto:     item.Producto,
-					Sucursal:     item.Sucursal,
-				})
+			for _, it := range cot.Items {
+				safeAppendItemResponse(&cr.Items, it)
 			}
-			response = append(response, cotizacionResponse)
+			resp = append(resp, cr)
 		}
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, resp)
 	}
 }
 
