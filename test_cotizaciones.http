@@ -1,4 +1,3 @@
-
 @baseUrl = http://localhost:8080
 
 ### =============================
@@ -33,7 +32,8 @@ Content-Type: application/json
   "rut_cliente": "12345678-9",
   "user_id": "vendedor2@ferreteria.cl",
   "tipo_despacho": "a domicilio",
-  "costo_envio": 10000.00
+  "costo_envio": 10000.00,
+  "descripcion": "Cotización para cliente VIP con descuento especial"
 }
 
 ### =============================
@@ -46,12 +46,26 @@ Content-Type: application/json
   "rut_cliente": "12345678-9",
   "user_id": "vendedor2@ferreteria.cl",
   "tipo_despacho": "retiro en tienda",
-  "costo_envio": 0.00
+  "costo_envio": 0.00,
+  "descripcion": "Pedido urgente para entrega inmediata"
 }
 
 ### =============================
-### PUT /cotizaciones/{id}
-### Editar solo el estado de una cotización
+### POST /cotizaciones
+### Crear cotización sin descripción (campo opcional)
+POST {{baseUrl}}/api/cotizaciones
+Content-Type: application/json
+
+{
+  "rut_cliente": "12345678-9",
+  "user_id": "vendedor2@ferreteria.cl",
+  "tipo_despacho": "a domicilio",
+  "costo_envio": 5000.00
+}
+
+### =============================
+### PATCH /cotizaciones/{id}/estado
+### Actualiza el estado de una cotización
 PUT {{baseUrl}}/api/cotizaciones/1
 Content-Type: application/json
 
@@ -59,6 +73,9 @@ Content-Type: application/json
   "estado": "pendiente"
 }
 
+### =============================
+### Permite Editar una cotizacion:
+### costo_envio, tipo_despacho, total
 ### =============================
 ### PUT /cotizaciones/{id}
 ### Editar solo el costo de envío
@@ -81,16 +98,29 @@ Content-Type: application/json
 
 ### =============================
 ### PUT /cotizaciones/{id}
-### Editar varios campos a la vez
+### Editar solo la descripción
 PUT {{baseUrl}}/api/cotizaciones/1
 Content-Type: application/json
 
 {
-  "estado": "confirmada",
-  "costo_envio": 7500.00,
-  "tipo_despacho": "a domicilio",
-  "total": 150000.00
+  "descripcion": "Descripción actualizada con nueva información"
 }
+
+### =============================
+### PUT /cotizaciones/{id}
+### Editar varios campos a la vez incluyendo descripción
+PUT {{baseUrl}}/api/cotizaciones/1
+Content-Type: application/json
+
+{
+  //"costo_envio": 7500.00,
+  "tipo_despacho": "a domicilio",
+  //"total": 150000.00,
+  "descripcion": "Cotización actualizada con nuevos productos"
+}
+### =============================
+### FIN ACTUALIZAR COTIZACION
+### =============================
 
 ### =============================
 ### POST /cotizaciones/{id}/items

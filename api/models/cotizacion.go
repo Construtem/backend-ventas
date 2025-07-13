@@ -55,7 +55,20 @@ import (
 // }
 
 // ========================================
-// MODELOS DE COTIZACIÓN
+// MODELOS DE TIPOS DE DESPACHO
+// ========================================
+
+type TipoDespacho struct {
+	ID     int    `gorm:"primaryKey" json:"id"`
+	Nombre string `gorm:"not null" json:"nombre"`
+}
+
+func (TipoDespacho) TableName() string {
+	return "tipo_despacho"
+}
+
+// ========================================
+// MODELOS DE COTIZACIONES
 // ========================================
 
 type Cotizacion struct {
@@ -67,6 +80,7 @@ type Cotizacion struct {
 	UserID       string    `gorm:"column:user_id;not null" json:"user_id"`
 	TipoDespacho string    `gorm:"column:tipo_despacho;not null" json:"tipo_despacho"`
 	Total        *float64  `json:"total"`
+	Descripcion  *string   `json:"descripcion" binding:"max=1000"`
 
 	// Relaciones
 	Cliente  *Cliente            `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`

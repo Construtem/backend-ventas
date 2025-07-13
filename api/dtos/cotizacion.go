@@ -11,6 +11,7 @@ type CreateCotizacionRequest struct {
 	UserID       string  `json:"user_id" binding:"required"`
 	TipoDespacho string  `json:"tipo_despacho"`
 	CostoEnvio   float64 `json:"costo_envio"`
+	Descripcion  *string `json:"descripcion"`
 }
 
 type CreateCotizacionResponse struct {
@@ -37,10 +38,15 @@ type AddItemResponse struct {
 
 // DTOs para actualizar cotización
 type UpdateCotizacionRequest struct {
-	Estado       *string  `json:"estado"`
 	CostoEnvio   *float64 `json:"costo_envio"`
 	TipoDespacho *string  `json:"tipo_despacho"`
 	Total        *float64 `json:"total"`
+	Descripcion  *string  `json:"descripcion"`
+}
+
+// DTOs para actualizar estado cotizacion
+type UpdateEstadoCotizacionRequest struct {
+	Estado string `json:"estado"`
 }
 
 // DTOs para respuestas de items
@@ -62,6 +68,7 @@ type CotizacionResponse struct {
 	UserID       string                   `json:"user_id"`
 	TipoDespacho string                   `json:"tipo_despacho"`
 	Total        *float64                 `json:"total"`
+	Descripcion  *string                  `json:"descripcion"`
 	Cliente      *models.Cliente          `json:"cliente,omitempty"`
 	Usuario      *models.Usuario          `json:"usuario,omitempty"`
 	Items        []CotizacionItemResponse `json:"items"`
@@ -75,6 +82,7 @@ type CotizacionListResponse struct {
 	FechaCrea   time.Time       `json:"fecha_crea"`
 	Estado      string          `json:"estado"`
 	RutCliente  string          `json:"rut_cliente"`
+	Descripcion *string         `json:"descripcion"`
 	Cliente     *models.Cliente `json:"cliente,omitempty"`
 	TotalItems  int             `json:"total_items"`
 	TotalPrecio float64         `json:"total_precio"`
@@ -113,6 +121,7 @@ type CotizacionSimplificadaResponse struct {
 	UserID       string    `json:"user_id"`
 	Nombre       string    `json:"nombre"` // Nombre del usuario
 	TipoDespacho string    `json:"tipo_despacho"`
+	Descripcion  *string   `json:"descripcion"`
 
 	// Datos del cliente
 	Cliente struct {
