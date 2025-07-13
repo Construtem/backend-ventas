@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"net/http"
 	"strconv"
 
@@ -14,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// GET /cotizaciones - Obtener todas las cotizaciones (simplificadas)
+// GET /cotizaciones - Obtener todas las cotizaciones simplificadas
 func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cotizaciones, err := controllers.ListarCotizacionesSimples()
@@ -166,7 +164,61 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 				UserID:       cotizacion.UserID,
 				TipoDespacho: cotizacion.TipoDespacho,
 				Total:        cotizacion.Total,
+				Descripcion:  cotizacion.Descripcion,
 				Cliente:      cotizacion.Cliente,
+				Usuario:      cotizacion.Usuario,
+				TotalItems:   totalItems,
+				TotalPrecio:  totalPrecio,
+			}
+			for _, item := range cotizacion.Items {
+				cotizacionResponse.Items = append(cotizacionResponse.Items, dtos.CotizacionItemResponse{
+					CotizacionID: item.CotizacionID,
+					ProductoID:   item.ProductoID,
+					SucursalID:   item.SucursalID,
+					Cantidad:     item.Cantidad,
+					Producto:     item.Producto,
+					Sucursal:     item.Sucursal,
+				})
+			}
+			response = append(response, cotizacionResponse)
+		}
+		c.JSON(http.StatusOK, response)
+	}
+}
+
+// GET /cotizaciones/:rut/historial
+func ObtenerCotizacionesPorClienteID(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rut := c.Param("id")
+		clienteID := rut
+		if clienteID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Rut del cliente inválido"})
+		}
+		cortizaciones, err := controllers.ObtenerCotizacionesPorClienteID(clienteID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Cotizaciones no encontradas"})
+		}
+		var response []dtos.CotizacionResponse
+		for _, cotizacion := range cortizaciones {
+			var totalItems int
+			var totalPrecio float64
+			for _, item := range cotizacion.Items {
+				totalItems += item.Cantidad
+				totalPrecio += float64(item.Cantidad) * item.Producto.Precio
+			}
+			totalPrecio += cotizacion.CostoEnvio
+			cotizacionResponse := dtos.CotizacionResponse{
+				ID:           cotizacion.ID,
+				FechaCrea:    cotizacion.FechaCrea,
+				Estado:       cotizacion.Estado,
+				CostoEnvio:   cotizacion.CostoEnvio,
+				RutCliente:   cotizacion.RutCliente,
+				UserID:       cotizacion.UserID,
+				TipoDespacho: cotizacion.TipoDespacho,
+				Total:        cotizacion.Total,
+				Descripcion:  cotizacion.Descripcion,
+				Cliente:      cotizacion.Cliente,
+				Usuario:      cotizacion.Usuario,
 				TotalItems:   totalItems,
 				TotalPrecio:  totalPrecio,
 			}
@@ -325,7 +377,7 @@ func CrearCotizacion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		cotizacion, err := controllers.CrearCotizacion(request.RutCliente, request.UserID, request.TipoDespacho, request.CostoEnvio)
+		cotizacion, err := controllers.CrearCotizacion(request.RutCliente, request.UserID, request.TipoDespacho, request.Descripcion, request.CostoEnvio)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear cotización"})
 			return
@@ -411,7 +463,7 @@ func AgregarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 }
 
 // PUT /cotizaciones/:id - Editar cotización
-func EditarCotizacion(db *gorm.DB) gin.HandlerFunc {
+func ActualizarCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 		cotizacionID, err := strconv.Atoi(id)
@@ -421,16 +473,37 @@ func EditarCotizacion(db *gorm.DB) gin.HandlerFunc {
 		}
 		var request dtos.UpdateCotizacionRequest
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos de entrada inválidos", "details": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos ingresados inválidos", "details": err.Error()})
 			return
 		}
+
 		// Actualizar cotización usando el controlador
-		_, err = controllers.ActualizarCotizacion(cotizacionID, request.Estado, request.CostoEnvio, request.TipoDespacho, request.Total)
+		_, err = controllers.ActualizarCotizacion(cotizacionID, request.CostoEnvio, request.TipoDespacho, request.Total, request.Descripcion)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar cotización"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"mensaje": "Cotización actualizada exitosamente"})
+	}
+}
+
+// PATCH /cotizaciones/:id/estado
+func ActualizarEstadoCotizacion(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		cotizacionID, err := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos ingresados inválidos", "details": err.Error()})
+			return
+		}
+		var request dtos.UpdateEstadoCotizacionRequest
+		// Actualizar el estado usando el controlador
+		_, err = controllers.ActualizarEstadoCotizacion(cotizacionID, request.Estado)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el estado de la cotización"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"mensaje": "Estado actualizacion correctamente"})
 	}
 }
 
@@ -507,11 +580,4 @@ func EliminarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, gin.H{"mensaje": "Item eliminado exitosamente"})
 	}
-}
-
-// Función auxiliar para generar token
-func generateToken() string {
-	bytes := make([]byte, 16)
-	rand.Read(bytes)
-	return hex.EncodeToString(bytes)
 }

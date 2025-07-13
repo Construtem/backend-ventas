@@ -1,6 +1,12 @@
+@baseUrl = http://localhost:8080
+
 ### 🟢 GET - Obtener todos los clientes
 GET http://localhost:8080/clientes
 
+### =============================
+### GET /clientes/{id}/direcciones
+### Obtener direcciones de un cliente por ID
+GET {{baseUrl}}/clientes/22222222-2/direcciones
 
 ### 🟢 POST - Crear nuevo cliente
 POST http://localhost:8080/clientes

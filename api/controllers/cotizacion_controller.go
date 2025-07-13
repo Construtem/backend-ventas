@@ -39,6 +39,12 @@ func ObtenerCotizacionCompletaPorID(id int) (models.Cotizacion, error) {
 	return cotizacion, err
 }
 
+func ObtenerCotizacionesPorClienteID(id string) ([]models.Cotizacion, error) {
+	var cotizaciones []models.Cotizacion
+	err := database.DB.Preload("Cliente").Preload("Usuario").Preload("Items.Producto").Preload("Items.Sucursal").First(&cotizaciones, id).Error
+	return cotizaciones, err
+}
+
 func ObtenerItemsCompletosCotizacion(id int) ([]models.CotizacionItem, error) {
 	var items []models.CotizacionItem
 	err := database.DB.Preload("Producto").Preload("Sucursal").Where("cotizacion_id = ?", id).Find(&items).Error
@@ -46,12 +52,13 @@ func ObtenerItemsCompletosCotizacion(id int) ([]models.CotizacionItem, error) {
 }
 
 // Métodos para crear cotizaciones
-func CrearCotizacion(rutCliente, userID, tipoDespacho string, costoEnvio float64) (models.Cotizacion, error) {
+func CrearCotizacion(rutCliente, userID, tipoDespacho string, descripcion *string, costoEnvio float64) (models.Cotizacion, error) {
 	cotizacion := models.Cotizacion{
 		RutCliente:   rutCliente,
 		UserID:       userID,
 		TipoDespacho: tipoDespacho,
 		CostoEnvio:   costoEnvio,
+		Descripcion:  descripcion,
 		Estado:       "pendiente",
 		FechaCrea:    time.Now(),
 	}
@@ -74,16 +81,13 @@ func AgregarItemCotizacion(cotizacionID int, productoID string, sucursalID int, 
 }
 
 // Métodos para actualizar cotizaciones
-func ActualizarCotizacion(id int, estado *string, costoEnvio *float64, tipoDespacho *string, total *float64) (models.Cotizacion, error) {
+func ActualizarCotizacion(id int, costoEnvio *float64, tipoDespacho *string, total *float64, descripcion *string) (models.Cotizacion, error) {
 	var cotizacion models.Cotizacion
 	err := database.DB.First(&cotizacion, id).Error
 	if err != nil {
 		return cotizacion, err
 	}
 
-	if estado != nil {
-		cotizacion.Estado = *estado
-	}
 	if costoEnvio != nil {
 		cotizacion.CostoEnvio = *costoEnvio
 	}
@@ -92,6 +96,24 @@ func ActualizarCotizacion(id int, estado *string, costoEnvio *float64, tipoDespa
 	}
 	if total != nil {
 		cotizacion.Total = total
+	}
+	if descripcion != nil {
+		cotizacion.Descripcion = descripcion
+	}
+
+	err = database.DB.Save(&cotizacion).Error
+	return cotizacion, err
+}
+
+// Método para actualizar estado de una cotizacione
+func ActualizarEstadoCotizacion(id int, estado string) (models.Cotizacion, error) {
+	var cotizacion models.Cotizacion
+	err := database.DB.First(&cotizacion, id).Error
+	if err != nil {
+		return cotizacion, err
+	}
+	if estado != "" {
+		cotizacion.Estado = estado
 	}
 
 	err = database.DB.Save(&cotizacion).Error

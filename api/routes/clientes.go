@@ -13,13 +13,13 @@ import (
 
 func ClienteRoutes(r *gin.Engine) {
 	r.GET("/clientes", obtenerClientes)
+	r.GET("/clientes/:id/direcciones", obtenerDireccionesCliente)
 	r.POST("/clientes", crearCliente)
 	r.PATCH("/clientes/:id", actualizarCliente)
 	r.DELETE("/clientes/:id", eliminarCliente)
 }
 
-
-		// FUNCION OBTENER DATOS //
+// FUNCION OBTENER DATOS //
 func obtenerClientes(c *gin.Context) {
 	var clientes []models.Cliente
 	if err := database.DB.Find(&clientes).Error; err != nil {
@@ -31,8 +31,17 @@ func obtenerClientes(c *gin.Context) {
 	c.JSON(http.StatusOK, clientes)
 }
 
+func obtenerDireccionesCliente(c *gin.Context) {
+	var direcciones []models.DirCliente
+	rut := c.Param("id")
+	if err := database.DB.Where("rut_cliente = ?", rut).Find(&direcciones).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener las direcciones del cliente"})
+		return
+	}
+	c.JSON(http.StatusOK, direcciones)
+}
 
-		// FUNCION CREAR CLIENTE //
+// FUNCION CREAR CLIENTE //
 func crearCliente(c *gin.Context) {
 	var cliente models.Cliente
 	if err := c.BindJSON(&cliente); err != nil {
@@ -79,8 +88,6 @@ func crearCliente(c *gin.Context) {
 	fmt.Print("\n\t\t<<<< CLIENTE CREADO CON EXITO >>>>\n")
 }
 
-
-
 func actualizarCliente(c *gin.Context) {
 	id := c.Param("id")
 	var cliente models.Cliente
@@ -120,26 +127,25 @@ func actualizarCliente(c *gin.Context) {
 	c.JSON(http.StatusOK, cliente)
 }
 
-
 // ELIMINAR CLIENTE
 func eliminarCliente(c *gin.Context) {
-    id := c.Param("id")
-    var cliente models.Cliente
+	id := c.Param("id")
+	var cliente models.Cliente
 
-    // Buscar el cliente por ID
-    if err := database.DB.First(&cliente, id).Error; err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Cliente no encontrado"})
-        fmt.Print("\n\t\t<<<< CLIENTE NO ENCONTRADO >>>>\n")
-        return
-    }
+	// Buscar el cliente por ID
+	if err := database.DB.First(&cliente, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Cliente no encontrado"})
+		fmt.Print("\n\t\t<<<< CLIENTE NO ENCONTRADO >>>>\n")
+		return
+	}
 
-    // Eliminar el cliente
-    if err := database.DB.Delete(&cliente).Error; err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar cliente"})
-        fmt.Print("\n\t\t<<<< ERROR AL ELIMINAR CLIENTE >>>>\n")
-        return
-    }
+	// Eliminar el cliente
+	if err := database.DB.Delete(&cliente).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar cliente"})
+		fmt.Print("\n\t\t<<<< ERROR AL ELIMINAR CLIENTE >>>>\n")
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"mensaje": "Cliente eliminado correctamente"})
-    fmt.Printf("\n\t\t<<<< CLIENTE ID %s ELIMINADO >>>>\n", id)
+	c.JSON(http.StatusOK, gin.H{"mensaje": "Cliente eliminado correctamente"})
+	fmt.Printf("\n\t\t<<<< CLIENTE ID %s ELIMINADO >>>>\n", id)
 }
