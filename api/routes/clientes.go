@@ -84,7 +84,7 @@ func crearCliente(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"id": cliente.ID})
+	c.JSON(http.StatusCreated, gin.H{"id": cliente.Rut})
 	fmt.Print("\n\t\t<<<< CLIENTE CREADO CON EXITO >>>>\n")
 }
 

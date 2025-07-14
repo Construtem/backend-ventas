@@ -143,3 +143,30 @@ type CotizacionSimplificadaResponse struct {
 	TotalItems  int     `json:"total_items"`
 	TotalPrecio float64 `json:"total_precio"`
 }
+
+// PARA CHECKOUT RESUMEN DETALLE COTIZACION
+// api/dtos/cotizacion_checkout_dto.go
+type CheckoutCotizacionResponse struct {
+	ID           int               `json:"id"`
+	FechaCrea    string            `json:"fecha_crea"`
+	Estado       string            `json:"estado"`
+	CostoEnvio   float64           `json:"costo_envio"`
+	TipoDespacho string            `json:"tipo_despacho"`
+	Cliente      Cliente           `json:"cliente"`
+	Usuario      Usuario           `json:"usuario"`
+	Direccion    DireccionCliente  `json:"direccion"`
+	Items        []CheckoutItemDTO `json:"items"`
+	SubtotalNeto float64           `json:"subtotal_neto"`
+	IVA          float64           `json:"iva"`
+	Total        float64           `json:"total"`
+	PreviewID    *int              `json:"preview_id,omitempty"`
+}
+
+type CheckoutItemDTO struct {
+	SKU        string  `json:"sku"`
+	Nombre     string  `json:"nombre"`
+	Cantidad   int     `json:"cantidad"`
+	PrecioUnit float64 `json:"precio_unitario"`
+	Subtotal   float64 `json:"subtotal"`
+	Sucursal   string  `json:"sucursal"`
+}
