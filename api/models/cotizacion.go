@@ -1,247 +1,117 @@
 package models
 
-import (
-	"time"
-)
+import "time"
 
-// // ========================================
-// // MODELOS DE CLIENTE (Solo para respuestas JSON)
-// // ========================================
-
-// // Cliente representa un cliente en el sistema
-// type Cliente struct {
-// 	Nombre      string  `gorm:"not null" json:"nombre"`
-// 	Telefono    *string `json:"telefono"`
-// 	Email       *string `json:"email"`
-// 	RazonSocial *string `gorm:"column:razon_social" json:"razon_social"`
-// 	Rut         string  `gorm:"primaryKey" json:"rut"`
-// 	TipoID      int     `gorm:"column:tipo_id;not null" json:"tipo_id"`
-
-// 	// Relaciones
-// 	TipoCliente  *TipoCliente `gorm:"foreignKey:TipoID" json:"tipo_cliente,omitempty"`
-// 	Direcciones  []DirCliente `gorm:"foreignKey:RutCliente" json:"direcciones,omitempty"`
-// 	Cotizaciones []Cotizacion `gorm:"foreignKey:RutCliente" json:"cotizaciones,omitempty"`
-// }
-
-// // TableName especifica el nombre de la tabla en la base de datos
-// func (Cliente) TableName() string {
-// 	return "clientes"
-// }
-
-// // TipoCliente representa el tipo de cliente
-// type TipoCliente struct {
-// 	ID     int    `gorm:"primaryKey" json:"id"`
-// 	Nombre string `gorm:"not null" json:"nombre"`
-// }
-
-// func (TipoCliente) TableName() string {
-// 	return "tipo_cliente"
-// }
-
-// // DirCliente representa las direcciones de un cliente
-// type DirCliente struct {
-// 	ID         int    `gorm:"primaryKey" json:"id"`
-// 	RutCliente string `gorm:"column:rut_cliente;not null" json:"rut_cliente"`
-// 	Direccion  string `gorm:"not null" json:"direccion"`
-// 	Comuna     string `gorm:"not null" json:"comuna"`
-// 	Ciudad     string `gorm:"not null" json:"ciudad"`
-
-// 	// Relaciones
-// 	Cliente *Cliente `gorm:"foreignKey:RutCliente" json:"cliente,omitempty"`
-// }
-
-// func (DirCliente) TableName() string {
-// 	return "dir_cliente"
-// }
-
-// ========================================
-// MODELOS DE TIPOS DE DESPACHO
-// ========================================
-
-type TipoDespacho struct {
-	ID     int    `gorm:"primaryKey" json:"id"`
-	Nombre string `gorm:"not null" json:"nombre"`
-}
-
-func (TipoDespacho) TableName() string {
-	return "tipo_despacho"
-}
-
-// ========================================
-// MODELOS DE COTIZACIONES
-// ========================================
+/* ─────────────────────────────────────────────  COTIZACIÓN  ───────────────────────────────────────────── */
 
 type Cotizacion struct {
-	ID           int       `gorm:"primaryKey" json:"id"`
-	FechaCrea    time.Time `gorm:"column:fecha_crea;default:CURRENT_TIMESTAMP" json:"fecha_crea"`
-	Estado       string    `gorm:"not null" json:"estado"`
-	CostoEnvio   float64   `gorm:"column:costo_envio;not null" json:"costo_envio"`
-	RutCliente   string    `gorm:"column:rut_cliente;not null" json:"rut_cliente"`
-	UserID       string    `gorm:"column:user_id;not null" json:"user_id"`
-	TipoDespacho string    `gorm:"column:tipo_despacho;not null" json:"tipo_despacho"`
-	Total        *float64  `json:"total"`
-	Descripcion  *string   `json:"descripcion" binding:"max=1000"`
+	ID           int       `gorm:"primaryKey"                                        json:"id"`
+	FechaCrea    time.Time `gorm:"column:fecha_crea;default:CURRENT_TIMESTAMP"       json:"fecha_crea"`
+	Estado       string    `gorm:"not null"                                          json:"estado"`
+	CostoEnvio   float64   `gorm:"column:costo_envio;not null"                       json:"costo_envio"`
+	RutCliente   string    `gorm:"column:rut_cliente;not null"                       json:"rut_cliente"`
+	UserID       string    `gorm:"column:user_id;not null"                           json:"user_id"`
+	TipoDespacho string    `gorm:"column:tipo_despacho;not null"                     json:"tipo_despacho"`
+	Total        *float64  `json:"total,omitempty"`
+	Descripcion  *string   `json:"descripcion,omitempty" binding:"max=1000"`
 
-	// Relaciones
-	Cliente  *Cliente            `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`
-	Usuario  *Usuario            `gorm:"foreignKey:UserID" json:"usuario,omitempty"`
-	Items    []CotizacionItem    `gorm:"foreignKey:CotizacionID" json:"items,omitempty"`
-	Previews []PreviewCotizacion `gorm:"foreignKey:CotizacionID" json:"previews,omitempty"`
+	Cliente           *Cliente           `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`
+	Usuario           *Usuario           `gorm:"foreignKey:UserID"                    json:"usuario,omitempty"`
+	Items             []CotizacionItem   `gorm:"foreignKey:CotizacionID"              json:"items,omitempty"`
+	PreviewCotizacion *PreviewCotizacion `gorm:"foreignKey:CotizacionID"              json:"preview_cotizacion,omitempty"`
 }
 
-func (Cotizacion) TableName() string {
-	return "cotizaciones"
-}
+func (Cotizacion) TableName() string { return "cotizaciones" }
 
+/* cotizacion_item */
 type CotizacionItem struct {
 	CotizacionID int    `gorm:"primaryKey;column:cotizacion_id" json:"cotizacion_id"`
-	ProductoID   string `gorm:"primaryKey;column:producto_id" json:"producto_id"`
-	SucursalID   int    `gorm:"primaryKey;column:sucursal_id" json:"sucursal_id"`
-	Cantidad     int    `gorm:"not null" json:"cantidad"`
+	ProductoID   string `gorm:"primaryKey;column:sku"   json:"producto_id"` // FK → productos.sku
+	SucursalID   int    `gorm:"primaryKey;column:sucursal_id"   json:"sucursal_id"`
+	Cantidad     int    `gorm:"not null"                        json:"cantidad"`
 
-	// Relaciones
-	Producto *Producto `gorm:"foreignKey:ProductoID" json:"producto,omitempty"`
-	Sucursal *Sucursal `gorm:"foreignKey:SucursalID" json:"sucursal,omitempty"`
+	Producto *Producto `gorm:"foreignKey:ProductoID;references:SKU" json:"producto,omitempty"`
+	Sucursal *Sucursal `gorm:"foreignKey:SucursalID"                json:"sucursal,omitempty"`
 }
 
-func (CotizacionItem) TableName() string {
-	return "cotizacion_item"
-}
+func (CotizacionItem) TableName() string { return "cotizacion_item" }
 
+/* preview_cotizacion */
 type PreviewCotizacion struct {
-	ID                        int       `gorm:"primaryKey" json:"id"`
-	CotizacionID              *int      `gorm:"column:cotizacion_id" json:"cotizacion_id"`
-	IssuedAt                  time.Time `gorm:"column:issued_at;not null" json:"issued_at"`
-	Subtotal                  float64   `gorm:"not null" json:"subtotal"`
-	Tax                       float64   `gorm:"not null" json:"tax"`
-	Total                     float64   `gorm:"not null" json:"total"`
-	PaymentStatus             string    `gorm:"column:payment_status;not null;default:'pending'" json:"payment_status"`
-	StatusPagado              bool      `gorm:"column:status_pagado;not null;default:false" json:"status_pagado"`
-	SuccessfulPaymentIntentID *int      `gorm:"column:successful_payment_intent_id" json:"successful_payment_intent_id"`
-	CreatedAt                 time.Time `gorm:"column:created_at;default:now()" json:"created_at"`
-	UpdatedAt                 time.Time `gorm:"column:updated_at;default:now()" json:"updated_at"`
+	ID                        int       `gorm:"primaryKey"                    json:"id"`
+	CotizacionID              *int      `gorm:"column:cotizacion_id"          json:"cotizacion_id,omitempty"`
+	IssuedAt                  time.Time `gorm:"column:issued_at;not null"      json:"issued_at"`
+	Subtotal                  float64   `gorm:"not null"                       json:"subtotal"`
+	Tax                       float64   `gorm:"not null"                       json:"tax"`
+	Total                     float64   `gorm:"not null"                       json:"total"`
+	PaymentStatus             string    `gorm:"column:payment_status;default:'pending'" json:"payment_status"`
+	StatusPagado              bool      `gorm:"column:status_pagado;default:false"      json:"status_pagado"`
+	SuccessfulPaymentIntentID *int      `gorm:"column:successful_payment_intent_id"     json:"successful_payment_intent_id,omitempty"`
+	CreatedAt                 time.Time `gorm:"column:created_at;default:now()"         json:"created_at"`
+	UpdatedAt                 time.Time `gorm:"column:updated_at;default:now()"         json:"updated_at"`
 
-	// Relaciones
-	Cotizacion              *Cotizacion    `gorm:"foreignKey:CotizacionID" json:"cotizacion,omitempty"`
+	Cotizacion              *Cotizacion    `gorm:"foreignKey:CotizacionID"              json:"cotizacion,omitempty"`
 	SuccessfulPaymentIntent *PaymentIntent `gorm:"foreignKey:SuccessfulPaymentIntentID" json:"successful_payment_intent,omitempty"`
 }
 
-func (PreviewCotizacion) TableName() string {
-	return "preview_cotizacion"
-}
+func (PreviewCotizacion) TableName() string { return "preview_cotizacion" }
 
+/* payment_intent */
 type PaymentIntent struct {
 	ID                int       `gorm:"primaryKey" json:"id"`
-	QuotePreviewID    int       `gorm:"column:quote_preview_id;not null" json:"quote_preview_id"`
-	PagoID            int       `gorm:"column:pago_id;not null" json:"pago_id"`
-	Status            string    `gorm:"not null" json:"status"`
-	TransactionAmount float64   `gorm:"column:transaction_amount;not null" json:"transaction_amount"`
-	MetodoPago        *string   `gorm:"column:metodo_pago" json:"metodo_pago"`
-	EventType         *string   `gorm:"column:event_type" json:"event_type"`
-	Payload           *string   `gorm:"type:jsonb" json:"payload"`
-	CreatedAt         time.Time `gorm:"column:created_at;default:now()" json:"created_at"`
-	UpdatedAt         time.Time `gorm:"column:updated_at;default:now()" json:"updated_at"`
+	QuotePreviewID    int       `gorm:"column:quote_preview_id;not null"`
+	PagoID            int       `gorm:"column:pago_id;not null"`
+	Status            string    `gorm:"not null"`
+	TransactionAmount float64   `gorm:"column:transaction_amount;not null"`
+	MetodoPago        *string   `gorm:"column:metodo_pago"`
+	EventType         *string   `gorm:"column:event_type"`
+	Payload           *string   `gorm:"type:jsonb"`
+	CreatedAt         time.Time `gorm:"column:created_at;default:now()"`
+	UpdatedAt         time.Time `gorm:"column:updated_at;default:now()"`
 
-	// Relaciones
 	QuotePreview *PreviewCotizacion `gorm:"foreignKey:QuotePreviewID" json:"quote_preview,omitempty"`
 }
 
-func (PaymentIntent) TableName() string {
-	return "payment_intent"
-}
+func (PaymentIntent) TableName() string { return "payment_intent" }
 
-// ========================================
-// MODELOS DE PRODUCTOS Y CATEGORÍAS
-// ========================================
+/* ───────────────────────────────  PRODUCTO – PK = SKU  ─────────────────────────────── */
 
 type Producto struct {
-	SKU         string  `gorm:"primaryKey;column:sku" json:"sku"`
-	Nombre      string  `gorm:"not null" json:"nombre"`
-	Descripcion string  `gorm:"not null" json:"descripcion"`
-	Marca       string  `gorm:"not null" json:"marca"`
-	Peso        float64 `gorm:"not null" json:"peso"`
-	Largo       float64 `gorm:"not null" json:"largo"`
-	Ancho       float64 `gorm:"not null" json:"ancho"`
-	Alto        float64 `gorm:"not null" json:"alto"`
-	Precio      float64 `gorm:"not null" json:"precio"`
-	ID          int64   `gorm:"column:id" json:"id"`
-	Codigo      *string `json:"codigo"`
-	CategoriaID *int    `gorm:"column:categoria_id" json:"categoria_id"`
-	Estado      *bool   `gorm:"default:true" json:"estado"`
-	Stock       int     `gorm:"not null" json:"stock"`
-
-	// Relaciones
-	Categoria *Categoria `gorm:"foreignKey:CategoriaID" json:"categoria,omitempty"`
+	SKU    string  `gorm:"primaryKey;column:sku" json:"sku"`
+	Nombre string  `json:"nombre"`
+	Precio float64 `json:"precio"`
+	// …otros campos…
 }
 
-func (Producto) TableName() string {
-	return "productos"
-}
+func (Producto) TableName() string { return "productos" }
 
-type Categoria struct {
-	ID     int    `gorm:"primaryKey" json:"id"`
-	Nombre string `gorm:"not null" json:"nombre"`
-}
-
-func (Categoria) TableName() string {
-	return "categoria"
-}
-
-// ========================================
-// MODELOS DE SUCURSALES
-// ========================================
+/* ───────────────────────────────  SUCURSAL  ─────────────────────────────── */
 
 type Sucursal struct {
-	ID        int     `gorm:"primaryKey" json:"id"`
-	Nombre    string  `gorm:"not null" json:"nombre"`
-	Telefono  string  `gorm:"not null" json:"telefono"`
-	TipoID    int     `gorm:"column:tipo_id;not null" json:"tipo_id"`
-	Direccion *string `json:"direccion"`
-	Comuna    *string `json:"comuna"`
-	Ciudad    *string `json:"ciudad"`
-
-	// Relaciones
-	Tipo *TipoSucursal `gorm:"foreignKey:TipoID" json:"tipo,omitempty"`
-}
-
-func (Sucursal) TableName() string {
-	return "sucursales"
-}
-
-type TipoSucursal struct {
 	ID     int    `gorm:"primaryKey" json:"id"`
-	Nombre string `gorm:"not null" json:"nombre"`
+	Nombre string `json:"nombre"`
 }
 
-func (TipoSucursal) TableName() string {
-	return "tipo_sucursal"
-}
+func (Sucursal) TableName() string { return "sucursales" }
 
-// ========================================
-// MODELOS DE USUARIOS Y ROLES
-// ========================================
+/* ───────────────────────────────  USUARIO / ROL  ─────────────────────────────── */
 
 type Usuario struct {
 	Email  string `gorm:"primaryKey" json:"email"`
-	Nombre string `gorm:"not null" json:"nombre"`
-	RolID  int    `gorm:"column:rol_id;not null" json:"rol_id"`
+	Nombre string `json:"nombre"`
+	RolID  int    `gorm:"column:rol_id" json:"rol_id"`
 
-	// Relaciones
 	Rol *Rol `gorm:"foreignKey:RolID" json:"rol,omitempty"`
 }
 
-func (Usuario) TableName() string {
-	return "usuarios"
-}
+func (Usuario) TableName() string { return "usuarios" }
 
 type Rol struct {
 	ID     int    `gorm:"primaryKey" json:"id"`
-	Nombre string `gorm:"not null" json:"nombre"`
+	Nombre string `json:"nombre"`
 }
 
-func (Rol) TableName() string {
-	return "roles"
-}
+func (Rol) TableName() string { return "roles" }
 
 // ========================================
 // MODELOS DE STOCK

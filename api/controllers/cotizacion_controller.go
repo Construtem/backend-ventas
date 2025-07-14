@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"backend-ventas/api/database"
+	"backend-ventas/api/dtos"
+	"backend-ventas/api/mappers"
 	"backend-ventas/api/models"
 	"time"
 )
@@ -155,4 +157,77 @@ func CrearPreviewCotizacion(cotizacionID *int, issuedAt time.Time, subtotal, tax
 	}
 	err = database.DB.Create(&preview).Error
 	return preview, err
+}
+
+// ObtenerCotizacionCheckout devuelve la cotización con cliente, dirección,
+// usuario, ítems precargados y totales calculados.
+func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error) {
+	var cot models.Cotizacion
+	err := database.DB.
+		Preload("Cliente").
+		Preload("Cliente.Direcciones").
+		Preload("Usuario").
+		Preload("Items"). // ← NUEVO
+		Preload("Items.Producto").
+		Preload("Items.Sucursal").
+		Preload("PreviewCotizacion").
+		First(&cot, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// -------- construir DTO --------
+	var subtotal float64
+	itemsDTO := make([]dtos.CheckoutItemDTO, 0) // ← evita null
+
+	for _, it := range cot.Items {
+		// mientras depuras, comenta el filtro o registra por qué es nil
+		if it.Producto == nil || it.Sucursal == nil {
+			// log.Printf("ítem descartado: %+v", it)
+			continue
+		}
+
+		sub := float64(it.Cantidad) * it.Producto.Precio
+		subtotal += sub
+
+		itemsDTO = append(itemsDTO, dtos.CheckoutItemDTO{
+			SKU:        it.Producto.SKU,
+			Nombre:     it.Producto.Nombre,
+			Cantidad:   it.Cantidad,
+			PrecioUnit: it.Producto.Precio,
+			Subtotal:   sub,
+			Sucursal:   it.Sucursal.Nombre,
+		})
+	}
+
+	iva := subtotal * 0.19
+	total := subtotal + iva + cot.CostoEnvio
+
+	// primera dirección si existe
+	dirDTO := dtos.DireccionCliente{}
+	if len(cot.Cliente.Direcciones) > 0 {
+		dirDTO = mappers.DirClienteToDTO(&cot.Cliente.Direcciones[0])
+	}
+
+	resp := &dtos.CheckoutCotizacionResponse{
+		ID:           cot.ID,
+		FechaCrea:    cot.FechaCrea.Format("2006-01-02 15:04:05"),
+		Estado:       cot.Estado,
+		CostoEnvio:   cot.CostoEnvio,
+		TipoDespacho: cot.TipoDespacho,
+
+		Cliente:   mappers.ClienteToDTO(cot.Cliente),
+		Usuario:   mappers.UsuarioToDTO(cot.Usuario),
+		Direccion: dirDTO,
+
+		Items:        itemsDTO,
+		SubtotalNeto: subtotal,
+		IVA:          iva,
+		Total:        total,
+	}
+
+	if cot.PreviewCotizacion != nil {
+		resp.PreviewID = &cot.PreviewCotizacion.ID
+	}
+	return resp, nil
 }

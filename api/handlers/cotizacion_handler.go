@@ -335,12 +335,10 @@ func ObtenerItemsSimplesCotizacion(db *gorm.DB) gin.HandlerFunc {
 				continue
 			}
 			result = append(result, ItemSimple{
-				SKU:         it.Producto.SKU,
-				Nombre:      it.Producto.Nombre,
-				Descripcion: it.Producto.Descripcion,
-				Marca:       it.Producto.Marca,
-				Cantidad:    it.Cantidad,
-				Sucursal:    it.Sucursal.Nombre,
+				SKU:      it.Producto.SKU,
+				Nombre:   it.Producto.Nombre,
+				Cantidad: it.Cantidad,
+				Sucursal: it.Sucursal.Nombre,
 			})
 		}
 		c.JSON(http.StatusOK, result)
@@ -582,5 +580,22 @@ func EliminarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"mensaje": "Item eliminado exitosamente"})
+	}
+}
+
+// GET /api/cotizaciones/checkout/:id
+func ObtenerCotizacionCheckout(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+			return
+		}
+		dto, err := controllers.ObtenerCotizacionCheckout(id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
+			return
+		}
+		c.JSON(http.StatusOK, dto)
 	}
 }
