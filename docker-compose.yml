@@ -25,6 +25,14 @@ services:
       DB_NAME: postgres # El nombre de tu DB externa
       DB_SSLMODE: require # Usualmente 'disable' para desarrollo local
 
+      # Datos para FireBase
+      FIREBASE_PROJECT_ID: ""
+      FIREBASE_CLIENT_EMAIL: ""
+      FIREBASE_PRIVATE_KEY: ""
+      FRONT_VENTAS_URL: ""
+      FRONT_INVENTARIO_URL: ""
+      FRONT_FACTURACION_URL: ""
+
       # Configuración del servidor
       PORT: 8080
       GIN_MODE: debug

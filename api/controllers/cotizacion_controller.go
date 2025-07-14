@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"backend-ventas/api/database"
+	"backend-ventas/api/dtos"
+	"backend-ventas/api/mappers"
 	"backend-ventas/api/models"
 	"time"
 )
@@ -39,6 +41,12 @@ func ObtenerCotizacionCompletaPorID(id int) (models.Cotizacion, error) {
 	return cotizacion, err
 }
 
+func ObtenerCotizacionesPorClienteID(id string) ([]models.Cotizacion, error) {
+	var cotizaciones []models.Cotizacion
+	err := database.DB.Preload("Cliente").Preload("Usuario").Preload("Items.Producto").Preload("Items.Sucursal").First(&cotizaciones, id).Error
+	return cotizaciones, err
+}
+
 func ObtenerItemsCompletosCotizacion(id int) ([]models.CotizacionItem, error) {
 	var items []models.CotizacionItem
 	err := database.DB.Preload("Producto").Preload("Sucursal").Where("cotizacion_id = ?", id).Find(&items).Error
@@ -46,12 +54,13 @@ func ObtenerItemsCompletosCotizacion(id int) ([]models.CotizacionItem, error) {
 }
 
 // Métodos para crear cotizaciones
-func CrearCotizacion(rutCliente, userID, tipoDespacho string, costoEnvio float64) (models.Cotizacion, error) {
+func CrearCotizacion(rutCliente, userID, tipoDespacho string, descripcion *string, costoEnvio float64) (models.Cotizacion, error) {
 	cotizacion := models.Cotizacion{
 		RutCliente:   rutCliente,
 		UserID:       userID,
 		TipoDespacho: tipoDespacho,
 		CostoEnvio:   costoEnvio,
+		Descripcion:  descripcion,
 		Estado:       "pendiente",
 		FechaCrea:    time.Now(),
 	}
@@ -74,16 +83,13 @@ func AgregarItemCotizacion(cotizacionID int, productoID string, sucursalID int, 
 }
 
 // Métodos para actualizar cotizaciones
-func ActualizarCotizacion(id int, estado *string, costoEnvio *float64, tipoDespacho *string, total *float64) (models.Cotizacion, error) {
+func ActualizarCotizacion(id int, costoEnvio *float64, tipoDespacho *string, total *float64, descripcion *string) (models.Cotizacion, error) {
 	var cotizacion models.Cotizacion
 	err := database.DB.First(&cotizacion, id).Error
 	if err != nil {
 		return cotizacion, err
 	}
 
-	if estado != nil {
-		cotizacion.Estado = *estado
-	}
 	if costoEnvio != nil {
 		cotizacion.CostoEnvio = *costoEnvio
 	}
@@ -92,6 +98,24 @@ func ActualizarCotizacion(id int, estado *string, costoEnvio *float64, tipoDespa
 	}
 	if total != nil {
 		cotizacion.Total = total
+	}
+	if descripcion != nil {
+		cotizacion.Descripcion = descripcion
+	}
+
+	err = database.DB.Save(&cotizacion).Error
+	return cotizacion, err
+}
+
+// Método para actualizar estado de una cotizacione
+func ActualizarEstadoCotizacion(id int, estado string) (models.Cotizacion, error) {
+	var cotizacion models.Cotizacion
+	err := database.DB.First(&cotizacion, id).Error
+	if err != nil {
+		return cotizacion, err
+	}
+	if estado != "" {
+		cotizacion.Estado = estado
 	}
 
 	err = database.DB.Save(&cotizacion).Error
@@ -133,4 +157,77 @@ func CrearPreviewCotizacion(cotizacionID *int, issuedAt time.Time, subtotal, tax
 	}
 	err = database.DB.Create(&preview).Error
 	return preview, err
+}
+
+// ObtenerCotizacionCheckout devuelve la cotización con cliente, dirección,
+// usuario, ítems precargados y totales calculados.
+func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error) {
+	var cot models.Cotizacion
+	err := database.DB.
+		Preload("Cliente").
+		Preload("Cliente.Direcciones").
+		Preload("Usuario").
+		Preload("Items"). // ← NUEVO
+		Preload("Items.Producto").
+		Preload("Items.Sucursal").
+		Preload("PreviewCotizacion").
+		First(&cot, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// -------- construir DTO --------
+	var subtotal float64
+	itemsDTO := make([]dtos.CheckoutItemDTO, 0) // ← evita null
+
+	for _, it := range cot.Items {
+		// mientras depuras, comenta el filtro o registra por qué es nil
+		if it.Producto == nil || it.Sucursal == nil {
+			// log.Printf("ítem descartado: %+v", it)
+			continue
+		}
+
+		sub := float64(it.Cantidad) * it.Producto.Precio
+		subtotal += sub
+
+		itemsDTO = append(itemsDTO, dtos.CheckoutItemDTO{
+			SKU:        it.Producto.SKU,
+			Nombre:     it.Producto.Nombre,
+			Cantidad:   it.Cantidad,
+			PrecioUnit: it.Producto.Precio,
+			Subtotal:   sub,
+			Sucursal:   it.Sucursal.Nombre,
+		})
+	}
+
+	iva := subtotal * 0.19
+	total := subtotal + iva + cot.CostoEnvio
+
+	// primera dirección si existe
+	dirDTO := dtos.DireccionCliente{}
+	if len(cot.Cliente.Direcciones) > 0 {
+		dirDTO = mappers.DirClienteToDTO(&cot.Cliente.Direcciones[0])
+	}
+
+	resp := &dtos.CheckoutCotizacionResponse{
+		ID:           cot.ID,
+		FechaCrea:    cot.FechaCrea.Format("2006-01-02 15:04:05"),
+		Estado:       cot.Estado,
+		CostoEnvio:   cot.CostoEnvio,
+		TipoDespacho: cot.TipoDespacho,
+
+		Cliente:   mappers.ClienteToDTO(cot.Cliente),
+		Usuario:   mappers.UsuarioToDTO(cot.Usuario),
+		Direccion: dirDTO,
+
+		Items:        itemsDTO,
+		SubtotalNeto: subtotal,
+		IVA:          iva,
+		Total:        total,
+	}
+
+	if cot.PreviewCotizacion != nil {
+		resp.PreviewID = &cot.PreviewCotizacion.ID
+	}
+	return resp, nil
 }
