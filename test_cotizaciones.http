@@ -1,27 +1,27 @@
 
 @baseUrl = http://localhost:8080
 
-### =============================
+### ============================= FUNCIONA
 ### GET /cotizaciones
 ### Obtener todas las cotizaciones simplificadas
 GET {{baseUrl}}/api/cotizaciones
 
-### =============================
+### ============================= FUNCIONA
 ### GET /cotizaciones/{id}
 ### Obtener cotización simplificada por ID
 GET {{baseUrl}}/api/cotizaciones/1
 
-### =============================
+### ============================= FUNCIONA
 ### GET /cotizaciones/completas
 ### Obtener todas las cotizaciones completas
 GET {{baseUrl}}/api/cotizaciones/completas
 
-### =============================
+### ============================= FUNCIONA
 ### GET /cotizaciones/completa/{id}
 ### Obtener cotización completa por ID
 GET {{baseUrl}}/api/cotizaciones/completa/1
 
-### =============================
+### ============================= FUNCIONA
 ### POST /cotizaciones
 ### Crear una nueva cotización
 ### Nota: rut_cliente debe existir en la tabla clientes
@@ -30,8 +30,8 @@ POST {{baseUrl}}/api/cotizaciones
 Content-Type: application/json
 
 {
-  "rut_cliente": "12345678-9",
-  "user_id": "vendedor2@ferreteria.cl",
+  "rut_cliente": "20667647-7",
+  "user_id": "galucema@utem.cl",
   "tipo_despacho": "a domicilio",
   "costo_envio": 10000.00
 }
@@ -49,60 +49,60 @@ Content-Type: application/json
   "costo_envio": 0.00
 }
 
-### =============================
+### ============================= FUNCIONA
 ### PUT /cotizaciones/{id}
 ### Editar solo el estado de una cotización
-PUT {{baseUrl}}/api/cotizaciones/1
+PUT {{baseUrl}}/api/cotizaciones/6
 Content-Type: application/json
 
 {
-  "estado": "pendiente"
+  "estado": "aprobada"
 }
 
-### =============================
+### ============================= FUNCIONA
 ### PUT /cotizaciones/{id}
 ### Editar solo el costo de envío
-PUT {{baseUrl}}/api/cotizaciones/1
+PUT {{baseUrl}}/api/cotizaciones/6
 Content-Type: application/json
 
 {
   "costo_envio": 5000.00
 }
 
-### =============================
+### ============================= FUNCIONA
 ### PUT /cotizaciones/{id}
 ### Editar solo el tipo de despacho
-PUT {{baseUrl}}/api/cotizaciones/1
+PUT {{baseUrl}}/api/cotizaciones/6
 Content-Type: application/json
 
 {
   "tipo_despacho": "express"
 }
 
-### =============================
+### ============================= FUNCIONA
 ### PUT /cotizaciones/{id}
 ### Editar varios campos a la vez
-PUT {{baseUrl}}/api/cotizaciones/1
+PUT {{baseUrl}}/api/cotizaciones/6
 Content-Type: application/json
 
 {
-  "estado": "confirmada",
+  "estado": "pendiente",
   "costo_envio": 7500.00,
   "tipo_despacho": "a domicilio",
   "total": 150000.00
 }
 
-### =============================
+### ============================= FUNCIONA
 ### POST /cotizaciones/{id}/items
 ### Agregar item a cotización
 ### Nota: producto_id es el SKU del producto (string)
 ### Nota: sucursal_id debe existir en la tabla sucursales
-POST {{baseUrl}}/api/cotizaciones/1/items
+POST {{baseUrl}}/api/cotizaciones/6/items
 Content-Type: application/json
 
 {
   "producto_id": "H001",
-  "sucursal_id": 1,
+  "sucursal_id": 5,
   "cantidad": 2
 }
 
@@ -130,21 +130,21 @@ Content-Type: application/json
   "cantidad": 3
 }
 
-### =============================
+### ============================= FUNCIONA
 ### GET /cotizaciones/{id}/items
 ### Obtener items completos de una cotización
-GET {{baseUrl}}/api/cotizaciones/1/items
+GET {{baseUrl}}/api/cotizaciones/6/items
 
-### =============================
+### ============================= ERROR 404
 ### GET /cotizaciones/{id}/items/simples
 ### Obtener items simples de una cotización
-GET {{baseUrl}}/api/cotizaciones/1/items/simples
+GET {{baseUrl}}/api/cotizaciones/6/items/simples
 
-### =============================
+### ============================= FUNCIONA
 ### DELETE /cotizaciones/{id}/items/{producto_id}/{sucursal_id}
 ### Eliminar item específico de cotización
 ### Nota: producto_id es el SKU (string), sucursal_id es número
-DELETE {{baseUrl}}/api/cotizaciones/1/items/H001/1
+DELETE {{baseUrl}}/api/cotizaciones/6/items/H001/5
 
 ### =============================
 ### DELETE /cotizaciones/{id}/items/{producto_id}/{sucursal_id}

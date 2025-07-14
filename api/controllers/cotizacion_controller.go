@@ -100,7 +100,7 @@ func ActualizarCotizacion(id int, estado *string, costoEnvio *float64, tipoDespa
 
 // Métodos para eliminar items de cotización
 func EliminarItemCotizacion(cotizacionID int, productoID string, sucursalID int) error {
-	return database.DB.Where("cotizacion_id = ? AND producto_id = ? AND sucursal_id = ?",
+	return database.DB.Where("cotizacion_id = ? AND sku = ? AND sucursal_id = ?",
 		cotizacionID, productoID, sucursalID).Delete(&models.CotizacionItem{}).Error
 }
 
