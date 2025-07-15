@@ -18,7 +18,7 @@ GET {{baseUrl}}/api/cotizaciones/completas
 ### ============================= FUNCIONA
 ### GET /cotizaciones/completa/{id}
 ### Obtener cotización completa por ID
-GET {{baseUrl}}/api/cotizaciones/completa/1
+GET {{baseUrl}}/api/cotizaciones/completa/6
 
 ### ============================= FUNCIONA
 ### POST /cotizaciones
@@ -33,7 +33,7 @@ Content-Type: application/json
   "user_id": "galucema@utem.cl",
   "tipo_despacho": "a domicilio",
   "costo_envio": 10000.00,
-  "descripcion": "Cotización para cliente VIP con descuento especial"
+  "descripcion": "Prueba de cotización para cliente"
 }
 
 ### =============================
@@ -63,10 +63,10 @@ Content-Type: application/json
   "costo_envio": 5000.00
 }
 
-### =============================
+### =============================  FALLA, PERO CREO QUE ES POR LOS PERMISOS DE GERENTE
 ### PATCH /cotizaciones/{id}/estado
 ### Actualiza el estado de una cotización
-PUT {{baseUrl}}/api/cotizaciones/1
+PATCH  {{baseUrl}}/api/cotizaciones/9
 Content-Type: application/json
 
 {
@@ -74,13 +74,13 @@ Content-Type: application/json
 }
 
 
-### =============================
+### =============================  FUNCIONA
 ### Permite Editar una cotizacion:
 ### costo_envio, tipo_despacho, total
 ### =============================
 ### PUT /cotizaciones/{id}
 ### Editar solo el costo de envío
-PUT {{baseUrl}}/api/cotizaciones/6
+PUT {{baseUrl}}/api/cotizaciones/9
 Content-Type: application/json
 
 {
@@ -90,7 +90,7 @@ Content-Type: application/json
 ### ============================= FUNCIONA
 ### PUT /cotizaciones/{id}
 ### Editar solo el tipo de despacho
-PUT {{baseUrl}}/api/cotizaciones/6
+PUT {{baseUrl}}/api/cotizaciones/9
 Content-Type: application/json
 
 {
@@ -100,24 +100,24 @@ Content-Type: application/json
 ### ============================= FUNCIONA
 ### PUT /cotizaciones/{id}
 ### Editar solo la descripción
-PUT {{baseUrl}}/api/cotizaciones/1
+PUT {{baseUrl}}/api/cotizaciones/9
 Content-Type: application/json
 
 {
   "descripcion": "Descripción actualizada con nueva información"
 }
 
-### =============================
+### =============================  FUNCIONA
 ### PUT /cotizaciones/{id}
 ### Editar varios campos a la vez incluyendo descripción
-PUT {{baseUrl}}/api/cotizaciones/1
+PUT {{baseUrl}}/api/cotizaciones/9
 Content-Type: application/json
 
 {
   //"costo_envio": 7500.00,
   "tipo_despacho": "a domicilio",
   //"total": 150000.00,
-  "descripcion": "Cotización actualizada con nuevos productos"
+  "descripcion": "Cotización prueba actualizada con nuevos productos"
 }
 ### =============================
 ### FIN ACTUALIZAR COTIZACION
@@ -128,7 +128,7 @@ Content-Type: application/json
 ### Agregar item a cotización
 ### Nota: producto_id es el SKU del producto (string)
 ### Nota: sucursal_id debe existir en la tabla sucursales
-POST {{baseUrl}}/api/cotizaciones/6/items
+POST {{baseUrl}}/api/cotizaciones/9/items
 Content-Type: application/json
 
 {
@@ -137,15 +137,15 @@ Content-Type: application/json
   "cantidad": 2
 }
 
-### =============================
+### ============================= FUNCIONA
 ### POST /cotizaciones/{id}/items
 ### Agregar otro item a la misma cotización
-POST {{baseUrl}}/api/cotizaciones/1/items
+POST {{baseUrl}}/api/cotizaciones/9/items
 Content-Type: application/json
 
 {
   "producto_id": "H002",
-  "sucursal_id": 1,
+  "sucursal_id": 4,
   "cantidad": 1
 }
 
@@ -164,18 +164,18 @@ Content-Type: application/json
 ### ============================= FUNCIONA
 ### GET /cotizaciones/{id}/items
 ### Obtener items completos de una cotización
-GET {{baseUrl}}/api/cotizaciones/6/items
+GET {{baseUrl}}/api/cotizaciones/9/items
 
 ### ============================= ERROR 404
 ### GET /cotizaciones/{id}/items/simples
 ### Obtener items simples de una cotización
-GET {{baseUrl}}/api/cotizaciones/6/items/simples
+GET {{baseUrl}}/api/cotizaciones/9/items/simples
 
 ### ============================= FUNCIONA
 ### DELETE /cotizaciones/{id}/items/{producto_id}/{sucursal_id}
 ### Eliminar item específico de cotización
 ### Nota: producto_id es el SKU (string), sucursal_id es número
-DELETE {{baseUrl}}/api/cotizaciones/6/items/H001/5
+DELETE {{baseUrl}}/api/cotizaciones/9/items/H002/4
 
 ### =============================
 ### DELETE /cotizaciones/{id}/items/{producto_id}/{sucursal_id}
