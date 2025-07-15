@@ -12,27 +12,5 @@ services:
     container_name: back-ventas
     restart: unless-stopped
 
-    environment:
-      # --- ¡CAMBIO CLAVE AQUÍ PARA DB EXTERNA! ---
-      #DB_HOST: host.docker.internal # <--- En Docker Desktop (Windows/macOS)
-      DB_HOST: aws-0-sa-east-1.pooler.supabase.com
-      # DB_HOST: 172.17.0.1         # <--- Alternativa para Linux (puede variar, ver "Más sobre DB_HOST" abajo)
-      # DB_HOST: TU_IP_DE_MAQUINA  # <--- Otra alternativa, si tu IP es estática y el firewall lo permite
-
-      DB_PORT: 5432 # <--- El puerto en el que tu PostgreSQL externo está escuchando (generalmente 5432)
-      DB_USER: postgres.htywykpuelkslihfipsu # Tu usuario de DB (el de tu DB externa)
-      DB_PASSWORD: jqrV9vqfuxGfUlw6 # Tu contraseña de DB (la de tu DB externa)
-      DB_NAME: postgres # El nombre de tu DB externa
-      DB_SSLMODE: require # Usualmente 'disable' para desarrollo local
-
-      # Datos para FireBase
-      FIREBASE_PROJECT_ID: ""
-      FIREBASE_CLIENT_EMAIL: ""
-      FIREBASE_PRIVATE_KEY: ""
-      FRONT_VENTAS_URL: ""
-      FRONT_INVENTARIO_URL: ""
-      FRONT_FACTURACION_URL: ""
-
-      # Configuración del servidor
-      PORT: 8080
-      GIN_MODE: debug
+    env_file:
+      - .env
