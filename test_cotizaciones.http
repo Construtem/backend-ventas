@@ -8,7 +8,7 @@ GET {{baseUrl}}/api/cotizaciones
 ### ============================= FUNCIONA
 ### GET /cotizaciones/{id}
 ### Obtener cotización simplificada por ID
-GET {{baseUrl}}/api/cotizaciones/1
+GET {{baseUrl}}/api/cotizaciones/6
 
 ### ============================= FUNCIONA
 ### GET /cotizaciones/completas
