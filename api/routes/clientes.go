@@ -12,11 +12,11 @@ import (
 )
 
 func ClienteRoutes(r *gin.Engine) {
-	r.GET("/clientes", obtenerClientes)
-	r.GET("/clientes/:id/direcciones", obtenerDireccionesCliente)
-	r.POST("/clientes", crearCliente)
-	r.PATCH("/clientes/:rut", actualizarCliente)
-	r.DELETE("/clientes/:rut", eliminarCliente)
+	r.GET("api/clientes", obtenerClientes)
+	r.GET("api/clientes/:id/direcciones", obtenerDireccionesCliente)
+	r.POST("api/clientes", crearCliente)
+	r.PATCH("api/clientes/:rut", actualizarCliente)
+	r.DELETE("api/clientes/:rut", eliminarCliente)
 }
 
 // FUNCION OBTENER DATOS //

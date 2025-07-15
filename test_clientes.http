@@ -1,9 +1,9 @@
 ### 🟢 GET - Obtener todos los clientes
-GET http://localhost:8080/clientes
+GET http://localhost:8080/api/clientes
 
 
 ### 🟢 POST - Crear nuevo cliente
-POST http://localhost:8080/clientes
+POST http://localhost:8080/api/clientes
 Content-Type: application/json
 
 {
@@ -16,14 +16,14 @@ Content-Type: application/json
 }
 
 
-### 🟡 PATCH - Actualizar cliente con ID X
+### 🟡 PATCH - Actualizar cliente con RUT
 ### Para conservar los mismos datos poner ""
-PATCH http://localhost:8080/clientes/19658977-5
+PATCH http://localhost:8080/api/clientes/19658977-5
 Content-Type: application/json
 
 {
   "telefono": "+569123456781"
 }
 
-### 🟡 DELETE - Borrar cliente con ID X
-DELETE http://localhost:8080/clientes/7
+### 🟡 DELETE - Borrar cliente con RUT
+DELETE http://localhost:8080/api/clientes/20667647-7
