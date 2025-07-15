@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"crypto/rand"
-	"encoding/hex"
+	// "crypto/rand"
+	// "encoding/hex"
 	"log"
-  
+
 	"net/http"
 	"strconv"
 
@@ -52,7 +52,7 @@ func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 		for _, cot := range cotizaciones {
 			var totalItems int
 			var totalPrecio float64
-			for _, item := range cotizacion.Items {
+			for _, item := range cot.Items {
 				if item.Producto != nil {
 					totalItems += item.Cantidad
 					totalPrecio += float64(item.Cantidad) * item.Producto.Precio
@@ -87,9 +87,9 @@ func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 					res.Cliente.RazonSocial = *cl.RazonSocial
 				}
 			}
-			for _, item := range cotizacion.Items {
+			for _, item := range cot.Items {
 				if item.Producto != nil {
-					simplificada.Items = append(simplificada.Items, struct {
+					res.Items = append(res.Items, struct {
 						SKU      string `json:"sku"`
 						Nombre   string `json:"nombre"`
 						Cantidad int    `json:"cantidad"`
@@ -124,41 +124,41 @@ func ObtenerCotizacionSimplificada(db *gorm.DB) gin.HandlerFunc {
 
 		var totalItems int
 		var totalPrecio float64
-		for _, item := range cotizacion.Items {
+		for _, item := range cot.Items {
 			if item.Producto != nil {
 				totalItems += item.Cantidad
 				totalPrecio += float64(item.Cantidad) * item.Producto.Precio
 			}
 		}
-		totalPrecio += cotizacion.CostoEnvio
+		totalPrecio += cot.CostoEnvio
 		response := dtos.CotizacionSimplificadaResponse{
-			ID:           cotizacion.ID,
-			FechaCrea:    cotizacion.FechaCrea,
-			Estado:       cotizacion.Estado,
-			CostoEnvio:   cotizacion.CostoEnvio,
-			UserID:       cotizacion.UserID,
+			ID:           cot.ID,
+			FechaCrea:    cot.FechaCrea,
+			Estado:       cot.Estado,
+			CostoEnvio:   cot.CostoEnvio,
+			UserID:       cot.UserID,
 			Nombre:       "",
-			TipoDespacho: cotizacion.TipoDespacho,
+			TipoDespacho: cot.TipoDespacho,
 			TotalItems:   totalItems,
 			TotalPrecio:  totalPrecio,
 		}
 		if cot.Usuario != nil {
-			res.Nombre = cot.Usuario.Nombre
+			response.Nombre = cot.Usuario.Nombre
 		}
 		if cl := cot.Cliente; cl != nil {
-			res.Cliente.Rut = cl.Rut
-			res.Cliente.Nombre = cl.Nombre
+			response.Cliente.Rut = cl.Rut
+			response.Cliente.Nombre = cl.Nombre
 			if cl.Telefono != nil {
-				res.Cliente.Telefono = *cl.Telefono
+				response.Cliente.Telefono = *cl.Telefono
 			}
 			if cl.Email != nil {
-				res.Cliente.Email = *cl.Email
+				response.Cliente.Email = *cl.Email
 			}
 			if cl.RazonSocial != nil {
-				res.Cliente.RazonSocial = *cl.RazonSocial
+				response.Cliente.RazonSocial = *cl.RazonSocial
 			}
 		}
-		for _, item := range cotizacion.Items {
+		for _, item := range cot.Items {
 			if item.Producto != nil {
 				response.Items = append(response.Items, struct {
 					SKU      string `json:"sku"`
@@ -171,7 +171,7 @@ func ObtenerCotizacionSimplificada(db *gorm.DB) gin.HandlerFunc {
 				})
 			}
 		}
-		c.JSON(http.StatusOK, res)
+		c.JSON(http.StatusOK, response)
 	}
 }
 
@@ -189,7 +189,7 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 		for _, cot := range cotizaciones {
 			var totalItems int
 			var totalPrecio float64
-			for _, item := range cotizacion.Items {
+			for _, item := range cot.Items {
 				totalItems += item.Cantidad
 				if item.Producto != nil {
 					totalPrecio += float64(item.Cantidad) * item.Producto.Precio
@@ -290,31 +290,31 @@ func ObtenerCotizacionPorID(db *gorm.DB) gin.HandlerFunc {
 
 		var totalItems int
 		var totalPrecio float64
-		for _, item := range cotizacion.Items {
+		for _, item := range cot.Items {
 			if item.Producto != nil {
 				totalItems += item.Cantidad
 				totalPrecio += float64(item.Cantidad) * item.Producto.Precio
 			}
 		}
-		totalPrecio += cotizacion.CostoEnvio
+		totalPrecio += cot.CostoEnvio
 		response := dtos.CotizacionResponse{
-			ID:           cotizacion.ID,
-			FechaCrea:    cotizacion.FechaCrea,
-			Estado:       cotizacion.Estado,
-			CostoEnvio:   cotizacion.CostoEnvio,
-			RutCliente:   cotizacion.RutCliente,
-			UserID:       cotizacion.UserID,
-			TipoDespacho: cotizacion.TipoDespacho,
-			Total:        cotizacion.Total,
-			Cliente:      cotizacion.Cliente,
-			Usuario:      cotizacion.Usuario,
+			ID:           cot.ID,
+			FechaCrea:    cot.FechaCrea,
+			Estado:       cot.Estado,
+			CostoEnvio:   cot.CostoEnvio,
+			RutCliente:   cot.RutCliente,
+			UserID:       cot.UserID,
+			TipoDespacho: cot.TipoDespacho,
+			Total:        cot.Total,
+			Cliente:      cot.Cliente,
+			Usuario:      cot.Usuario,
 			TotalItems:   totalItems,
 			TotalPrecio:  totalPrecio,
 		}
 		for _, it := range cot.Items {
-			safeAppendItemResponse(&resp.Items, it)
+			safeAppendItemResponse(&response.Items, it)
 		}
-		c.JSON(http.StatusOK, resp)
+		c.JSON(http.StatusOK, response)
 	}
 }
 
@@ -395,12 +395,12 @@ func CrearCotizacion(db *gorm.DB) gin.HandlerFunc {
 
 		// Verificaciones básicas (cliente / usuario)
 		var cliente models.Cliente
-		if err := db.Where("rut = ?", request.RutCliente).First(&cliente).Error; err != nil {
+		if err := db.Where("rut = ?", req.RutCliente).First(&cliente).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Cliente no encontrado"})
 			return
 		}
 		var usuario models.Usuario
-		if err := db.Where("email = ?", request.UserID).First(&usuario).Error; err != nil {
+		if err := db.Where("email = ?", req.UserID).First(&usuario).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no encontrado"})
 			return
 		}
@@ -443,7 +443,7 @@ func AgregarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 		}
 		// Verificar que el producto existe
 		var producto models.Producto
-		if err := db.Where("sku = ?", request.ProductoID).First(&producto).Error; err != nil {
+		if err := db.Where("sku = ?", req.ProductoID).First(&producto).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Producto no encontrado"})
 			return
 		}
@@ -453,10 +453,10 @@ func AgregarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 		}
 		// Verificar si ya existe el item
 		var existingItem models.CotizacionItem
-		err = db.Where("cotizacion_id = ? AND sku = ? AND sucursal_id = ?", cotizacionID, request.ProductoID, request.SucursalID).First(&existingItem).Error
+		err = db.Where("cotizacion_id = ? AND sku = ? AND sucursal_id = ?", cotID, req.ProductoID, req.SucursalID).First(&existingItem).Error
 		if err == nil {
 			// El item ya existe, actualizar cantidad
-			existingItem.Cantidad += request.Cantidad
+			existingItem.Cantidad += req.Cantidad
 			if err := db.Save(&existingItem).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar item"})
 				return
@@ -472,7 +472,7 @@ func AgregarItemCotizacion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// Crear nuevo item usando el controlador
-		item, err := controllers.AgregarItemCotizacion(cotizacionID, request.ProductoID, request.SucursalID, request.Cantidad)
+		item, err := controllers.AgregarItemCotizacion(cotID, req.ProductoID, req.SucursalID, req.Cantidad)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al agregar item"})
 			return
