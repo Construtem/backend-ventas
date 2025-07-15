@@ -26,9 +26,9 @@ func (Cotizacion) TableName() string { return "cotizaciones" }
 /* cotizacion_item */
 type CotizacionItem struct {
 	CotizacionID int    `gorm:"primaryKey;column:cotizacion_id" json:"cotizacion_id"`
-	ProductoID   string `gorm:"primaryKey;column:sku"   json:"producto_id"` // FK → productos.sku
-	SucursalID   int    `gorm:"primaryKey;column:sucursal_id"   json:"sucursal_id"`
-	Cantidad     int    `gorm:"not null"                        json:"cantidad"`
+	ProductoID   string `gorm:"primaryKey;column:sku" json:"producto_id"`
+	SucursalID   int    `gorm:"primaryKey;column:sucursal_id" json:"sucursal_id"`
+	Cantidad     int    `gorm:"not null" json:"cantidad"`
 
 	Producto *Producto `gorm:"foreignKey:ProductoID;references:SKU" json:"producto,omitempty"`
 	Sucursal *Sucursal `gorm:"foreignKey:SucursalID"                json:"sucursal,omitempty"`

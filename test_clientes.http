@@ -1,35 +1,29 @@
-@baseUrl = http://localhost:8080
-
 ### 🟢 GET - Obtener todos los clientes
-GET http://localhost:8080/clientes
+GET http://localhost:8080/api/clientes
 
-### =============================
-### GET /clientes/{id}/direcciones
-### Obtener direcciones de un cliente por ID
-GET {{baseUrl}}/clientes/22222222-2/direcciones
 
 ### 🟢 POST - Crear nuevo cliente
-POST http://localhost:8080/clientes
+POST http://localhost:8080/api/clientes
 Content-Type: application/json
 
 {
-  "nombre": "Jeremy Vega",
+  "nombre": "JCliente prueba",
   "telefono": "+569123456789",
-  "email": "jere.@example.com",
+  "email": "jere.2@example.com",
   "razon_social": "",
   "rut": "19658977-5",
   "tipo_id": 2
 }
 
 
-### 🟡 PATCH - Actualizar cliente con ID X
+### 🟡 PATCH - Actualizar cliente con RUT
 ### Para conservar los mismos datos poner ""
-PATCH http://localhost:8080/clientes/7
+PATCH http://localhost:8080/api/clientes/19658977-5
 Content-Type: application/json
 
 {
-  "rut": "20667647-7"
+  "telefono": "+569123456781"
 }
 
-### 🟡 DELETE - Borrar cliente con ID X
-DELETE http://localhost:8080/clientes/7
+### 🟡 DELETE - Borrar cliente con RUT
+DELETE http://localhost:8080/api/clientes/20667647-7

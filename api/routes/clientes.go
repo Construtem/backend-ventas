@@ -12,11 +12,11 @@ import (
 )
 
 func ClienteRoutes(r *gin.Engine) {
-	r.GET("/clientes", obtenerClientes)
-	r.GET("/clientes/:id/direcciones", obtenerDireccionesCliente)
-	r.POST("/clientes", crearCliente)
-	r.PATCH("/clientes/:id", actualizarCliente)
-	r.DELETE("/clientes/:id", eliminarCliente)
+	r.GET("api/clientes", obtenerClientes)
+	r.GET("api/clientes/:id/direcciones", obtenerDireccionesCliente)
+	r.POST("api/clientes", crearCliente)
+	r.PATCH("api/clientes/:rut", actualizarCliente)
+	r.DELETE("api/clientes/:rut", eliminarCliente)
 }
 
 // FUNCION OBTENER DATOS //
@@ -84,16 +84,16 @@ func crearCliente(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"id": cliente.Rut})
+	c.JSON(http.StatusCreated, gin.H{"cliente creado con rut": cliente.Rut})
 	fmt.Print("\n\t\t<<<< CLIENTE CREADO CON EXITO >>>>\n")
 }
 
 func actualizarCliente(c *gin.Context) {
-	id := c.Param("id")
+	rut_cliente := c.Param("rut")
 	var cliente models.Cliente
 
-	// Buscar cliente por ID
-	if err := database.DB.First(&cliente, id).Error; err != nil {
+	// Buscar cliente por RUT
+	if err := database.DB.Where("rut = ?", rut_cliente).First(&cliente).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Cliente no encontrado"})
 		fmt.Print("\n\t\t<<<< CLIENTE NO ENCONTRADO >>>>\n")
 		return
@@ -129,23 +129,23 @@ func actualizarCliente(c *gin.Context) {
 
 // ELIMINAR CLIENTE
 func eliminarCliente(c *gin.Context) {
-	id := c.Param("id")
-	var cliente models.Cliente
+    rut_cliente := c.Param("rut")
+    var cliente models.Cliente
 
-	// Buscar el cliente por ID
-	if err := database.DB.First(&cliente, id).Error; err != nil {
+    // Buscar el cliente por RUT
+    if err := database.DB.Where("rut = ?", rut_cliente).First(&cliente).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Cliente no encontrado"})
 		fmt.Print("\n\t\t<<<< CLIENTE NO ENCONTRADO >>>>\n")
 		return
 	}
 
-	// Eliminar el cliente
-	if err := database.DB.Delete(&cliente).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar cliente"})
-		fmt.Print("\n\t\t<<<< ERROR AL ELIMINAR CLIENTE >>>>\n")
-		return
-	}
+    // Eliminar el cliente
+    if err := database.DB.Delete(&cliente).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar cliente"})
+        fmt.Print("\n\t\t<<<< ERROR AL ELIMINAR CLIENTE >>>>\n")
+        return
+    }
 
-	c.JSON(http.StatusOK, gin.H{"mensaje": "Cliente eliminado correctamente"})
-	fmt.Printf("\n\t\t<<<< CLIENTE ID %s ELIMINADO >>>>\n", id)
+    c.JSON(http.StatusOK, gin.H{"mensaje": "Cliente eliminado correctamente"})
+    fmt.Printf("\n\t\t<<<< CLIENTE CON RUT %s ELIMINADO >>>>\n", rut_cliente)
 }
