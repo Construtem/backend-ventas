@@ -231,3 +231,27 @@ func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error)
 	}
 	return resp, nil
 }
+
+func ActualizarEstadoPagoCotizacion(id int, estadoPago string) (models.Cotizacion, error) {
+	var cotizacion models.Cotizacion
+	err := database.DB.First(&cotizacion, id).Error
+
+	if err != nil {
+		return cotizacion, err
+	}
+
+	if estadoPago != "" {
+		cotizacion.EstadoPago = estadoPago
+	}
+
+	err = database.DB.Save(&cotizacion).Error
+	return cotizacion, err
+
+}
+
+func ObtenerEstadoPagoCotizacionPorID(id int) (models.Cotizacion, error) {
+	var cotizacion models.Cotizacion
+	err := database.DB.First(&cotizacion, id).Error
+
+	return cotizacion, err
+}

@@ -69,6 +69,7 @@ type CotizacionResponse struct {
 	TipoDespacho string                   `json:"tipo_despacho"`
 	Total        *float64                 `json:"total"`
 	Descripcion  *string                  `json:"descripcion"`
+	EstadoPago   string                   `json:"estado_pago"`
 	Cliente      *models.Cliente          `json:"cliente,omitempty"`
 	Usuario      *models.Usuario          `json:"usuario,omitempty"`
 	Items        []CotizacionItemResponse `json:"items"`
@@ -169,4 +170,15 @@ type CheckoutItemDTO struct {
 	PrecioUnit float64 `json:"precio_unitario"`
 	Subtotal   float64 `json:"subtotal"`
 	Sucursal   string  `json:"sucursal"`
+}
+
+// DTO para actualizar estado de pago cotizacion
+type UpdateEstadoPagoCotizacionRequest struct {
+	EstadoPago string `json:"estado_pago"`
+}
+
+// DTO response estado de pago cotizacion
+type EstadoPagoCotizacionResponse struct {
+	ID         int    `json:"id"`
+	EstadoPago string `json:"estado_pago"`
 }

@@ -194,7 +194,7 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 				if item.Producto != nil {
 					totalPrecio += float64(item.Cantidad) * item.Producto.Precio
 				} else {
-				// Opcional: loguea o maneja el error, por ejemplo:
+					// Opcional: loguea o maneja el error, por ejemplo:
 					log.Printf("Producto nil en item: %+v", item)
 				}
 			}
@@ -210,6 +210,7 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 				TipoDespacho: cot.TipoDespacho,
 				Total:        cot.Total,
 				Descripcion:  cot.Descripcion,
+				EstadoPago:   cot.EstadoPago,
 				Cliente:      cot.Cliente,
 				Usuario:      cot.Usuario,
 				TotalItems:   totalItems,
@@ -257,6 +258,7 @@ func ObtenerCotizacionesPorClienteID(db *gorm.DB) gin.HandlerFunc {
 				TipoDespacho: cot.TipoDespacho,
 				Total:        cot.Total,
 				Descripcion:  cot.Descripcion,
+				EstadoPago:   cot.EstadoPago,
 				Cliente:      cot.Cliente,
 				Usuario:      cot.Usuario,
 				TotalItems:   totalItems,
@@ -305,6 +307,8 @@ func ObtenerCotizacionPorID(db *gorm.DB) gin.HandlerFunc {
 			RutCliente:   cot.RutCliente,
 			UserID:       cot.UserID,
 			TipoDespacho: cot.TipoDespacho,
+			Descripcion:  cot.Descripcion,
+			EstadoPago:   cot.EstadoPago,
 			Total:        cot.Total,
 			Cliente:      cot.Cliente,
 			Usuario:      cot.Usuario,
@@ -632,5 +636,50 @@ func ObtenerCotizacionCheckout(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, dto)
+	}
+}
+
+func ActualizarEstadoPagoCotizacion(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		cotID, err := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
+			return
+		}
+		var req dtos.UpdateEstadoPagoCotizacionRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos ingresados inválidos", "details": err.Error()})
+			return
+		}
+
+		_, err = controllers.ActualizarEstadoPagoCotizacion(cotID, req.EstadoPago)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Error al actualizar el Estado del pago"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"mensaje": "Estado de pago actualizado correctamente"})
+	}
+}
+
+func ObtenerEstadoPagoCotizacion(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		cotID, err := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
+			return
+		}
+		var res dtos.EstadoPagoCotizacionResponse
+		cotizacion, err := controllers.ObtenerEstadoPagoCotizacionPorID(cotID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Cotización no encontrada"})
+			return
+		}
+		res.ID = cotizacion.ID
+		res.EstadoPago = cotizacion.EstadoPago
+
+		c.JSON(http.StatusOK, res)
 	}
 }
