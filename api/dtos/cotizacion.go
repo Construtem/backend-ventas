@@ -67,7 +67,6 @@ type CotizacionResponse struct {
 	RutCliente   string                   `json:"rut_cliente"`
 	UserID       string                   `json:"user_id"`
 	TipoDespacho string                   `json:"tipo_despacho"`
-	EstadoPago   string                   `json:"estado_pago"`
 	Total        *float64                 `json:"total"`
 	Descripcion  *string                  `json:"descripcion"`
 	EstadoPago   string                   `json:"estado_pago"`
