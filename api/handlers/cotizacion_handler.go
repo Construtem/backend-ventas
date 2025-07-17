@@ -67,6 +67,7 @@ func ObtenerCotizacionesSimplificadas(db *gorm.DB) gin.HandlerFunc {
 				CostoEnvio:   cot.CostoEnvio,
 				UserID:       cot.UserID,
 				TipoDespacho: cot.TipoDespacho,
+				EstadoPago:   cot.EstadoPago,
 				TotalItems:   totalItems,
 				TotalPrecio:  totalPrecio,
 			}
@@ -139,6 +140,7 @@ func ObtenerCotizacionSimplificada(db *gorm.DB) gin.HandlerFunc {
 			UserID:       cot.UserID,
 			Nombre:       "",
 			TipoDespacho: cot.TipoDespacho,
+			EstadoPago:   cot.EstadoPago,
 			TotalItems:   totalItems,
 			TotalPrecio:  totalPrecio,
 		}
@@ -194,7 +196,7 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 				if item.Producto != nil {
 					totalPrecio += float64(item.Cantidad) * item.Producto.Precio
 				} else {
-				// Opcional: loguea o maneja el error, por ejemplo:
+					// Opcional: loguea o maneja el error, por ejemplo:
 					log.Printf("Producto nil en item: %+v", item)
 				}
 			}
@@ -208,6 +210,7 @@ func ObtenerCotizaciones(db *gorm.DB) gin.HandlerFunc {
 				RutCliente:   cot.RutCliente,
 				UserID:       cot.UserID,
 				TipoDespacho: cot.TipoDespacho,
+				EstadoPago:   cot.EstadoPago,
 				Total:        cot.Total,
 				Descripcion:  cot.Descripcion,
 				Cliente:      cot.Cliente,
@@ -257,6 +260,7 @@ func ObtenerCotizacionesPorClienteID(db *gorm.DB) gin.HandlerFunc {
 				TipoDespacho: cot.TipoDespacho,
 				Total:        cot.Total,
 				Descripcion:  cot.Descripcion,
+				EstadoPago:   cot.EstadoPago,
 				Cliente:      cot.Cliente,
 				Usuario:      cot.Usuario,
 				TotalItems:   totalItems,
@@ -304,6 +308,7 @@ func ObtenerCotizacionPorID(db *gorm.DB) gin.HandlerFunc {
 			CostoEnvio:   cot.CostoEnvio,
 			RutCliente:   cot.RutCliente,
 			UserID:       cot.UserID,
+			EstadoPago:   cot.EstadoPago,
 			TipoDespacho: cot.TipoDespacho,
 			Total:        cot.Total,
 			Cliente:      cot.Cliente,
@@ -584,7 +589,7 @@ func CrearPreviewCotizacion(db *gorm.DB) gin.HandlerFunc {
 			Tax:           prev.Tax,
 			Total:         prev.Total,
 			PaymentStatus: prev.PaymentStatus,
-			StatusPagado:  prev.StatusPagado,
+			EstadoPago:    prev.EstadoPagado,
 			CreatedAt:     prev.CreatedAt,
 			UpdatedAt:     prev.UpdatedAt,
 			Mensaje:       "Preview creado exitosamente",
