@@ -62,6 +62,7 @@ func CrearCotizacion(rutCliente, userID, tipoDespacho string, descripcion *strin
 		CostoEnvio:   costoEnvio,
 		Descripcion:  descripcion,
 		Estado:       "pendiente",
+		EstadoPago:   "pendiente",
 		FechaCrea:    time.Now(),
 	}
 
@@ -151,7 +152,7 @@ func CrearPreviewCotizacion(cotizacionID *int, issuedAt time.Time, subtotal, tax
 		Tax:           tax,
 		Total:         total,
 		PaymentStatus: "pending",
-		StatusPagado:  false,
+		EstadoPagado:  "pendiente",
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
@@ -215,6 +216,7 @@ func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error)
 		Estado:       cot.Estado,
 		CostoEnvio:   cot.CostoEnvio,
 		TipoDespacho: cot.TipoDespacho,
+		EstadoPago:   cot.EstadoPago,
 
 		Cliente:   mappers.ClienteToDTO(cot.Cliente),
 		Usuario:   mappers.UsuarioToDTO(cot.Usuario),

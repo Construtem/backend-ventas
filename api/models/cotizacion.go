@@ -14,6 +14,7 @@ type Cotizacion struct {
 	TipoDespacho string    `gorm:"column:tipo_despacho;not null"                     json:"tipo_despacho"`
 	Total        *float64  `json:"total,omitempty"`
 	Descripcion  *string   `json:"descripcion,omitempty" binding:"max=1000"`
+	EstadoPago   string    `gorm:"column:estado_pago" json:"estado_pago"`
 
 	Cliente           *Cliente           `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`
 	Usuario           *Usuario           `gorm:"foreignKey:UserID"                    json:"usuario,omitempty"`
@@ -45,7 +46,7 @@ type PreviewCotizacion struct {
 	Tax                       float64   `gorm:"not null"                       json:"tax"`
 	Total                     float64   `gorm:"not null"                       json:"total"`
 	PaymentStatus             string    `gorm:"column:payment_status;default:'pending'" json:"payment_status"`
-	StatusPagado              bool      `gorm:"column:status_pagado;default:false"      json:"status_pagado"`
+	EstadoPagado              string    `gorm:"column:estado_pagado;default:false"      json:"estado_pagado"`
 	SuccessfulPaymentIntentID *int      `gorm:"column:successful_payment_intent_id"     json:"successful_payment_intent_id,omitempty"`
 	CreatedAt                 time.Time `gorm:"column:created_at;default:now()"         json:"created_at"`
 	UpdatedAt                 time.Time `gorm:"column:updated_at;default:now()"         json:"updated_at"`

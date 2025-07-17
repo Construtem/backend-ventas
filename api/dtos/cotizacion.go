@@ -67,6 +67,7 @@ type CotizacionResponse struct {
 	RutCliente   string                   `json:"rut_cliente"`
 	UserID       string                   `json:"user_id"`
 	TipoDespacho string                   `json:"tipo_despacho"`
+	EstadoPago   string                   `json:"estado_pago"`
 	Total        *float64                 `json:"total"`
 	Descripcion  *string                  `json:"descripcion"`
 	Cliente      *models.Cliente          `json:"cliente,omitempty"`
@@ -86,6 +87,7 @@ type CotizacionListResponse struct {
 	Cliente     *models.Cliente `json:"cliente,omitempty"`
 	TotalItems  int             `json:"total_items"`
 	TotalPrecio float64         `json:"total_precio"`
+	EstadoPago  string          `json:"estado_pago"`
 }
 
 // DTOs para preview de cotización
@@ -104,7 +106,7 @@ type PreviewCotizacionResponse struct {
 	Tax                       float64   `json:"tax"`
 	Total                     float64   `json:"total"`
 	PaymentStatus             string    `json:"payment_status"`
-	StatusPagado              bool      `json:"status_pagado"`
+	EstadoPago                string    `json:"estado_pago"`
 	SuccessfulPaymentIntentID *int      `json:"successful_payment_intent_id"`
 	CreatedAt                 time.Time `json:"created_at"`
 	UpdatedAt                 time.Time `json:"updated_at"`
@@ -122,6 +124,7 @@ type CotizacionSimplificadaResponse struct {
 	Nombre       string    `json:"nombre"` // Nombre del usuario
 	TipoDespacho string    `json:"tipo_despacho"`
 	Descripcion  *string   `json:"descripcion"`
+	EstadoPago   string    `json:"estado_pago"` // Estado del pago
 
 	// Datos del cliente
 	Cliente struct {
@@ -152,6 +155,7 @@ type CheckoutCotizacionResponse struct {
 	Estado       string            `json:"estado"`
 	CostoEnvio   float64           `json:"costo_envio"`
 	TipoDespacho string            `json:"tipo_despacho"`
+	EstadoPago   string            `json:"estado_pago"`
 	Cliente      Cliente           `json:"cliente"`
 	Usuario      Usuario           `json:"usuario"`
 	Direccion    DireccionCliente  `json:"direccion"`
