@@ -294,19 +294,24 @@ Content-Type: application/json
 ### =============================
 ### POST /cotizaciones/{id}/items
 ### Intentar agregar item con cantidad inválida (debe fallar)
-POST {{baseUrl}}/api/cotizaciones/1/items
+POST {{baseUrl}}/api/cotizaciones/4/items
 Content-Type: application/json
 
 {
-  "producto_id": "H001",
-  "sucursal_id": 1,
-  "cantidad": 0
+  "producto_id": "H027",
+  "sucursal_id": 8,
+  "cantidad": 1
 }
 
 ### =============================
 ### GET /cotizaciones/{id}
 ### Intentar obtener cotización inexistente (debe fallar)
-GET {{baseUrl}}/api/cotizaciones/999
+GET {{baseUrl}}/api/cotizaciones/4
+
+### =============================
+### GET /cotizaciones/{id}
+### Intentar obtener el checkout de una cotización con los datos que recibe facturación
+GET {{baseUrl}}/api/cotizaciones/checkout/4
 
 ### =============================
 ### PUT /cotizaciones/{id}
@@ -317,6 +322,8 @@ Content-Type: application/json
 {
   "estado": "pendiente"
 }
+
+
 
 ### =============================
 ### PATCH /cotizaciones/status/{id}
