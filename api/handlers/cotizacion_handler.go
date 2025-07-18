@@ -641,6 +641,58 @@ func ObtenerCotizacionCheckout(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+func ObtenerHistorialCotizaciones(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rut := c.Param("rut") // ← ahora el parámetro se llama :rut
+		if rut == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "RUT inválido"})
+			return
+		}
+
+		cots, err := controllers.ListarCotizacionesPorCliente(rut)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener cotizaciones"})
+			return
+		}
+
+		// --- mapear a DTO (reaprovechamos la lógica que ya tenías) ---
+		resp := make([]dtos.CotizacionResponse, 0, len(cots))
+		for _, cot := range cots {
+			var totalItems int
+			var totalPrecio float64
+			for _, it := range cot.Items {
+				if it.Producto != nil {
+					totalItems += it.Cantidad
+					totalPrecio += float64(it.Cantidad) * it.Producto.Precio
+				}
+			}
+			totalPrecio += cot.CostoEnvio
+
+			cr := dtos.CotizacionResponse{
+				ID:           cot.ID,
+				FechaCrea:    cot.FechaCrea,
+				Estado:       cot.Estado,
+				EstadoPago:   cot.EstadoPago,
+				CostoEnvio:   cot.CostoEnvio,
+				RutCliente:   cot.RutCliente,
+				UserID:       cot.UserID,
+				TipoDespacho: cot.TipoDespacho,
+				Total:        cot.Total,
+				Descripcion:  cot.Descripcion,
+				Cliente:      cot.Cliente,
+				Usuario:      cot.Usuario,
+				TotalItems:   totalItems,
+				TotalPrecio:  totalPrecio,
+			}
+			for _, it := range cot.Items {
+				safeAppendItemResponse(&cr.Items, it)
+			}
+			resp = append(resp, cr)
+		}
+		c.JSON(http.StatusOK, resp)
+	}
+}
+
 func ActualizarEstadoPagoCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")

@@ -273,6 +273,20 @@ func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error)
 	return resp, nil
 }
 
+// ListarCotizacionesPorCliente devuelve TODAS las cotizaciones de un RUT
+func ListarCotizacionesPorCliente(rut string) ([]models.Cotizacion, error) {
+	var cots []models.Cotizacion
+	err := database.DB.
+		Preload("Cliente").
+		Preload("Usuario").
+		Preload("Items.Producto").
+		Preload("Items.Sucursal").
+		Where("rut_cliente = ?", rut).
+		Order("fecha_crea DESC").
+		Find(&cots).Error // ←  Find (no First)
+	return cots, err
+}
+
 func ActualizarEstadoPagoCotizacion(id int, estadoPago string) (models.Cotizacion, error) {
 	var cotizacion models.Cotizacion
 	err := database.DB.First(&cotizacion, id).Error
