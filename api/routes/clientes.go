@@ -15,9 +15,13 @@ func ClienteRoutes(r *gin.Engine) {
 	r.GET("api/clientes", obtenerClientes)
 	r.GET("api/clientes/:id/direcciones", obtenerDireccionesCliente)
 	r.POST("api/clientes", crearCliente)
+	r.POST("api/nuevaDireccion", crearDireccionesCliente)  //21277429-4
 	r.PATCH("api/clientes/:rut", actualizarCliente)
 	r.DELETE("api/clientes/:rut", eliminarCliente)
+	r.DELETE("api/eliminarDireccion/:id", eliminarDireccionCliente)
 }
+
+//			### CLIENTES ###
 
 // FUNCION OBTENER DATOS //
 func obtenerClientes(c *gin.Context) {
@@ -29,16 +33,6 @@ func obtenerClientes(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, clientes)
-}
-
-func obtenerDireccionesCliente(c *gin.Context) {
-	var direcciones []models.DirCliente
-	rut := c.Param("id")
-	if err := database.DB.Where("rut_cliente = ?", rut).Find(&direcciones).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener las direcciones del cliente"})
-		return
-	}
-	c.JSON(http.StatusOK, direcciones)
 }
 
 // FUNCION CREAR CLIENTE //
@@ -148,4 +142,83 @@ func eliminarCliente(c *gin.Context) {
 
     c.JSON(http.StatusOK, gin.H{"mensaje": "Cliente eliminado correctamente"})
     fmt.Printf("\n\t\t<<<< CLIENTE CON RUT %s ELIMINADO >>>>\n", rut_cliente)
+}
+
+// 			### DIRECCIONES ###
+
+// FUNCION OBTENER DIRECCION //
+func obtenerDireccionesCliente(c *gin.Context) {
+	var direcciones []models.DirCliente
+	rut := c.Param("id")
+	if err := database.DB.Where("rut_cliente = ?", rut).Find(&direcciones).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener las direcciones del cliente"})
+		return
+	}
+	c.JSON(http.StatusOK, direcciones)
+}
+
+func crearDireccionesCliente(c *gin.Context) {
+	var direccion models.DirCliente
+	if err := c.BindJSON(&direccion); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "JSON inválido"})
+		fmt.Printf("\n\t\t<<<< JSON INVALIDO: %v >>>>\n", err)
+		return
+	}
+
+	// Validaciones campos obligatorios
+	if direccion.RutCliente == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Faltan campos obligatorios"})
+		fmt.Print("\n\t\t<<<< FALTAN CAMPOS >>>>\n")
+		return
+	}
+
+	// Validar si el cliente existe
+	var cliente models.Cliente
+	if err := database.DB.Where("rut = ?", direccion.RutCliente).First(&cliente).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "el Cliente no est registrado"})
+		fmt.Print("\n\t\t<<<< CLIENTE NO REGISTRADO >>>>\n")
+		return
+	}
+
+	// SOLO DESCOMENTAR SI NO SE PUEDE TENER MAS DE UNA DIRECCION
+	// Verificar si el rut ya esta registrado en la tabla
+	// var existe models.DirCliente
+	// if err := database.DB.Where("rut_cliente = ?", direccion.RutCliente).First(&existe).Error; err == nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "El rut ya esta registrado"})
+	// 	fmt.Print("\n\t\t<<<< EL CORREO YA ESTA REGISTRADO >>>>\n")
+	// 	return
+	// }
+
+	// Crear Direccion
+	if err := database.DB.Create(&direccion).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear cliente"})
+		fmt.Printf("\n\t\t<<<< ERROR AL CREAR CLIENTE %v >>>>\n", err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"cliente creado con rut": direccion.RutCliente})
+	fmt.Print("\n\t\t<<<< CLIENTE CREADO CON EXITO >>>>\n")
+
+}
+
+func eliminarDireccionCliente(c *gin.Context) {
+	id := c.Param("id")
+    var direccion models.DirCliente
+
+    // Buscar el cliente por ID
+    if err := database.DB.Where("id = ?", id).First(&direccion).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Direccion no encontrado"})
+		fmt.Printf("\n\t\t<<<< CLIENTE NO ENCONTRADO: %v >>>>\n", err)
+		return
+	}
+
+    // Eliminar el cliente
+    if err := database.DB.Delete(&direccion).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar direccion"})
+        fmt.Printf("\n\t\t<<<< ERROR AL ELIMINAR DIRECCION: %v >>>>\n", err)
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"mensaje": "Direccion eliminada correctamente"})
+    fmt.Printf("\n\t\t<<<< DIRECCION CON ID %s ELIMINADA >>>>\n", id)
 }
