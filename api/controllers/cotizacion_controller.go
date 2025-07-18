@@ -5,6 +5,9 @@ import (
 	"backend-ventas/api/dtos"
 	"backend-ventas/api/mappers"
 	"backend-ventas/api/models"
+	"fmt"
+	"log"
+	"math"
 	"time"
 )
 
@@ -164,47 +167,82 @@ func CrearPreviewCotizacion(cotizacionID *int, issuedAt time.Time, subtotal, tax
 // usuario, ítems precargados y totales calculados.
 func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error) {
 	var cot models.Cotizacion
+	log.Printf("se está buscando la cotizacion %d", id)
 	err := database.DB.
-		Preload("Cliente").
 		Preload("Cliente.Direcciones").
 		Preload("Usuario").
-		Preload("Items"). // ← NUEVO
 		Preload("Items.Producto").
 		Preload("Items.Sucursal").
-		Preload("PreviewCotizacion").
 		First(&cot, id).Error
 	if err != nil {
 		return nil, err
 	}
 
-	// -------- construir DTO --------
-	var subtotal float64
-	itemsDTO := make([]dtos.CheckoutItemDTO, 0) // ← evita null
+	/*-----------------------------------------------------------
+	  1) Traer descuentos de stock_sucursal para los ítems
+	-----------------------------------------------------------*/
+	// Mapear claves sku+sucursal_id → % descuento
+	// Mapear claves sku+sucursal_id → % descuento
+	type row struct{ Descuento float64 } // ← float64
+	descs := make(map[string]int)        // ← guardamos int 0-100
 
 	for _, it := range cot.Items {
-		// mientras depuras, comenta el filtro o registra por qué es nil
-		if it.Producto == nil || it.Sucursal == nil {
-			// log.Printf("ítem descartado: %+v", it)
-			continue
+		var r row
+		key := fmt.Sprintf("%s|%d", it.ProductoID, it.SucursalID)
+
+		if err := database.DB.Raw(`
+        SELECT COALESCE(descuento,0) AS descuento
+          FROM stock_sucursal
+         WHERE sku = ? AND sucursal_id = ?`,
+			it.ProductoID, it.SucursalID).
+			Scan(&r).Error; err != nil {
+			return nil, err
 		}
 
-		sub := float64(it.Cantidad) * it.Producto.Precio
+		pct := int(math.Round(r.Descuento)) // 10.00 → 10
+		if pct < 0 {
+			pct = 0
+		}
+		descs[key] = pct
+	}
+
+	/*-----------------------------------------------------------
+	  2) Construir DTO y totales
+	-----------------------------------------------------------*/
+	var subtotal float64
+	var descuentoTotal float64
+	itemsDTO := make([]dtos.CheckoutItemDTO, 0, len(cot.Items))
+
+	for _, it := range cot.Items {
+		if it.Producto == nil || it.Sucursal == nil {
+			continue
+		}
+		key := fmt.Sprintf("%s|%d", it.ProductoID, it.SucursalID)
+		pctDesc := descs[key] // 0-100
+		precio := it.Producto.Precio
+		sub := float64(it.Cantidad) * precio     // sin descuento
+		ahorro := sub * float64(pctDesc) / 100.0 // monto rebajado
+
 		subtotal += sub
+		descuentoTotal += ahorro
 
 		itemsDTO = append(itemsDTO, dtos.CheckoutItemDTO{
 			SKU:        it.Producto.SKU,
 			Nombre:     it.Producto.Nombre,
 			Cantidad:   it.Cantidad,
-			PrecioUnit: it.Producto.Precio,
+			PrecioUnit: precio,
 			Subtotal:   sub,
+			Descuento:  pctDesc, // porcentaje entero
 			Sucursal:   it.Sucursal.Nombre,
 		})
 	}
 
-	iva := subtotal * 0.19
-	total := subtotal + iva + cot.CostoEnvio
+	subtotalConDesc := subtotal - descuentoTotal
+	base := subtotalConDesc + cot.CostoEnvio
+	iva := base * 0.19
+	total := base + iva
 
-	// primera dirección si existe
+	// primera dirección
 	dirDTO := dtos.DireccionCliente{}
 	if len(cot.Cliente.Direcciones) > 0 {
 		dirDTO = mappers.DirClienteToDTO(&cot.Cliente.Direcciones[0])
@@ -214,7 +252,6 @@ func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error)
 		ID:           cot.ID,
 		FechaCrea:    cot.FechaCrea.Format("2006-01-02 15:04:05"),
 		Estado:       cot.Estado,
-		CostoEnvio:   cot.CostoEnvio,
 		TipoDespacho: cot.TipoDespacho,
 		EstadoPago:   cot.EstadoPago,
 
@@ -222,10 +259,12 @@ func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error)
 		Usuario:   mappers.UsuarioToDTO(cot.Usuario),
 		Direccion: dirDTO,
 
-		Items:        itemsDTO,
-		SubtotalNeto: subtotal,
-		IVA:          iva,
-		Total:        total,
+		Items:          itemsDTO,
+		CostoEnvio:     cot.CostoEnvio, // ← valor del despacho
+		SubtotalNeto:   subtotal,
+		DescuentoTotal: descuentoTotal,
+		IVA:            iva,
+		Total:          total,
 	}
 
 	if cot.PreviewCotizacion != nil {
