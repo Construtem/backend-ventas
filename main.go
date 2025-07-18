@@ -26,13 +26,13 @@ func main() {
 	// Configurando CORS
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{ // Lista de URLs permitidas para CORS
-			"*",
-			// os.Getenv("FRONT_VENTAS_URL"),      // URL del frontend de ventas
-			// os.Getenv("FRONT_INVENTARIO_URL"),  // URL del frontend de inventario
-			// os.Getenv("FRONT_FACTURACION_URL"), // URL del frontend de facturación
-			// os.Getenv("BACK_FACTURACION_URL"),  // URL del backend de facturación
-		},
+		// AllowOrigins: []string{ // Lista de URLs permitidas para CORS
+		//     os.Getenv("FRONT_VENTAS_URL"),      // URL del frontend de ventas
+		//     os.Getenv("FRONT_INVENTARIO_URL"),  // URL del frontend de inventario
+		//     os.Getenv("FRONT_FACTURACION_URL"), // URL del frontend de facturación
+		//     os.Getenv("BACK_FACTURACION_URL"),  // URL del backend de facturación
+		// },
+		AllowAllOrigins:  true, // Permitir todos los orígenes en desarrollo
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

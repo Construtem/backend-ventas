@@ -67,9 +67,9 @@ type CotizacionResponse struct {
 	RutCliente   string                   `json:"rut_cliente"`
 	UserID       string                   `json:"user_id"`
 	TipoDespacho string                   `json:"tipo_despacho"`
-	EstadoPago   string                   `json:"estado_pago"`
 	Total        *float64                 `json:"total"`
 	Descripcion  *string                  `json:"descripcion"`
+	EstadoPago   string                   `json:"estado_pago"`
 	Cliente      *models.Cliente          `json:"cliente,omitempty"`
 	Usuario      *models.Usuario          `json:"usuario,omitempty"`
 	Items        []CotizacionItemResponse `json:"items"`
@@ -150,20 +150,21 @@ type CotizacionSimplificadaResponse struct {
 // PARA CHECKOUT RESUMEN DETALLE COTIZACION
 // api/dtos/cotizacion_checkout_dto.go
 type CheckoutCotizacionResponse struct {
-	ID           int               `json:"id"`
-	FechaCrea    string            `json:"fecha_crea"`
-	Estado       string            `json:"estado"`
-	CostoEnvio   float64           `json:"costo_envio"`
-	TipoDespacho string            `json:"tipo_despacho"`
-	EstadoPago   string            `json:"estado_pago"`
-	Cliente      Cliente           `json:"cliente"`
-	Usuario      Usuario           `json:"usuario"`
-	Direccion    DireccionCliente  `json:"direccion"`
-	Items        []CheckoutItemDTO `json:"items"`
-	SubtotalNeto float64           `json:"subtotal_neto"`
-	IVA          float64           `json:"iva"`
-	Total        float64           `json:"total"`
-	PreviewID    *int              `json:"preview_id,omitempty"`
+	ID             int               `json:"id"`
+	FechaCrea      string            `json:"fecha_crea"`
+	Estado         string            `json:"estado"`
+	CostoEnvio     float64           `json:"costo_envio"`
+	TipoDespacho   string            `json:"tipo_despacho"`
+	EstadoPago     string            `json:"estado_pago"`
+	Cliente        Cliente           `json:"cliente"`
+	Usuario        Usuario           `json:"usuario"`
+	Direccion      DireccionCliente  `json:"direccion"`
+	Items          []CheckoutItemDTO `json:"items"`
+	SubtotalNeto   float64           `json:"subtotal_neto"`
+	IVA            float64           `json:"iva"`
+	DescuentoTotal float64           `json:"descuento_total"`
+	Total          float64           `json:"total"`
+	PreviewID      *int              `json:"preview_id,omitempty"`
 }
 
 type CheckoutItemDTO struct {
@@ -173,4 +174,16 @@ type CheckoutItemDTO struct {
 	PrecioUnit float64 `json:"precio_unitario"`
 	Subtotal   float64 `json:"subtotal"`
 	Sucursal   string  `json:"sucursal"`
+	Descuento  int     `json:"descuento,omitempty"`
+}
+
+// DTO para actualizar estado de pago cotizacion
+type UpdateEstadoPagoCotizacionRequest struct {
+	EstadoPago string `json:"estado_pago"`
+}
+
+// DTO response estado de pago cotizacion
+type EstadoPagoCotizacionResponse struct {
+	ID         int    `json:"id"`
+	EstadoPago string `json:"estado_pago"`
 }

@@ -14,7 +14,7 @@ type Cotizacion struct {
 	TipoDespacho string    `gorm:"column:tipo_despacho;not null"                     json:"tipo_despacho"`
 	Total        *float64  `json:"total,omitempty"`
 	Descripcion  *string   `json:"descripcion,omitempty" binding:"max=1000"`
-	EstadoPago   string    `gorm:"column:estado_pago" json:"estado_pago"`
+	EstadoPago   string    `gorm:"column:estado_pago;default:pendiente" json:"estado_pago"`
 
 	Cliente           *Cliente           `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`
 	Usuario           *Usuario           `gorm:"foreignKey:UserID"                    json:"usuario,omitempty"`
@@ -78,9 +78,10 @@ func (PaymentIntent) TableName() string { return "payment_intent" }
 /* ───────────────────────────────  PRODUCTO – PK = SKU  ─────────────────────────────── */
 
 type Producto struct {
-	SKU    string  `gorm:"primaryKey;column:sku" json:"sku"`
-	Nombre string  `json:"nombre"`
-	Precio float64 `json:"precio"`
+	SKU         string  `gorm:"primaryKey;column:sku" json:"sku"`
+	Nombre      string  `json:"nombre"`
+	Descripcion string  `json:"descripcion"`
+	Precio      float64 `json:"precio"`
 	// …otros campos…
 }
 

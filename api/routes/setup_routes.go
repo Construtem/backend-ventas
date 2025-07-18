@@ -23,6 +23,8 @@ func SetupRoutes(router *gin.Engine) {
 			"endpoints": gin.H{
 				"cotizaciones": "/api/cotizaciones",
 				"sucursales":   "/api/sucursales",
+				"productos":    "/api/productos",
+				"ventas":       "/api/ventas",
 				"health":       "/health",
 			},
 		})
@@ -38,6 +40,8 @@ func SetupRoutes(router *gin.Engine) {
 	// Configurar rutas de cotizaciones
 	CotizacionRoutes(router)
 	SucursalesRoutes(router)
+	ProductosRoutes(router)
+	VentasRoutes(router)
 
 	// Aquí agregar más grupos de rutas en el futuro:
 	// - ProductoRoutes(router)
