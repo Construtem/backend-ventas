@@ -1,5 +1,13 @@
 @baseUrl = http://localhost:8080
 
+### =============================
+{{baseUrl}}/api/cotizaciones/despacho
+
+### ============================= 
+### GET /api/cotizaciones/cliente/{rut}/historial
+### Obtener todas las cotizaciones simplificadas
+GET  {{baseUrl}}/api/cotizaciones/cliente/44444444-4/historial
+
 ### ============================= FUNCIONA
 ### GET /cotizaciones
 ### Obtener todas las cotizaciones simplificadas
