@@ -26,4 +26,25 @@ Content-Type: application/json
 }
 
 ### 🟡 DELETE - Borrar cliente con RUT
-DELETE http://localhost:8080/api/clientes/20667647-7
+DELETE http://localhost:8080/api/clientes/19658977-5
+
+
+
+        ### DIRECCIONES DE CLIENTES ###
+
+### 🟢 GET - Obtener direcciones por RUT de un cliente        //esta bueno
+GET http://localhost:8080/api/clientes/44444444-4/direcciones
+
+### 🟢 POST - Crear direcciones por RUT de un cliente
+POST http://localhost:8080/api/nuevaDireccion
+Content-Type: application/json
+
+{
+  "rut_cliente": "44444444-4",
+  "direccion": "Calle Falsa 123",
+  "comuna": "Metropolitana",
+  "ciudad": "Santiago"
+}
+
+### 🟡 DELETE - Eliminar dirrecion por ID 
+DELETE http://localhost:8080/api/eliminarDireccion/7
