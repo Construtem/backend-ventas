@@ -60,21 +60,23 @@ type CotizacionItemResponse struct {
 }
 
 type CotizacionResponse struct {
-	ID           int                      `json:"id"`
-	FechaCrea    time.Time                `json:"fecha_crea"`
-	Estado       string                   `json:"estado"`
-	CostoEnvio   float64                  `json:"costo_envio"`
-	RutCliente   string                   `json:"rut_cliente"`
-	UserID       string                   `json:"user_id"`
-	TipoDespacho string                   `json:"tipo_despacho"`
-	Total        *float64                 `json:"total"`
-	Descripcion  *string                  `json:"descripcion"`
-	EstadoPago   string                   `json:"estado_pago"`
-	Cliente      *models.Cliente          `json:"cliente,omitempty"`
-	Usuario      *models.Usuario          `json:"usuario,omitempty"`
-	Items        []CotizacionItemResponse `json:"items"`
-	TotalItems   int                      `json:"total_items"`
-	TotalPrecio  float64                  `json:"total_precio"`
+	ID           int               `json:"id"`
+	FechaCrea    time.Time         `json:"fecha_crea"`
+	Estado       string            `json:"estado"`
+	Direccion    *DireccionCliente `json:"direccion"`
+	CostoEnvio   float64           `json:"costo_envio"`
+	RutCliente   string            `json:"rut_cliente"`
+	UserID       string            `json:"user_id"`
+	TipoDespacho string            `json:"tipo_despacho"`
+	Total        *float64          `json:"total"`
+	Descripcion  *string           `json:"descripcion"`
+
+	EstadoPago  string                   `json:"estado_pago"`
+	Cliente     *models.Cliente          `json:"cliente,omitempty"`
+	Usuario     *models.Usuario          `json:"usuario,omitempty"`
+	Items       []CotizacionItemResponse `json:"items"`
+	TotalItems  int                      `json:"total_items"`
+	TotalPrecio float64                  `json:"total_precio"`
 }
 
 // DTOs para listar cotizaciones
