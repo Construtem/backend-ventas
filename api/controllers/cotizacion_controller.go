@@ -310,3 +310,10 @@ func ObtenerEstadoPagoCotizacionPorID(id int) (models.Cotizacion, error) {
 
 	return cotizacion, err
 }
+
+func ObtenerDespachoDestinoCotizacion(id int) (*models.DirCliente, error) {
+	var despacho models.Despacho
+	err := database.DB.Preload("DestinoObj").Where("cotizacion_id = ?", id).First(&despacho).Error
+
+	return despacho.DestinoObj, err
+}

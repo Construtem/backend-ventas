@@ -4,7 +4,6 @@ import (
 	"backend-ventas/api/database"
 	"backend-ventas/api/dtos"
 	"backend-ventas/api/models"
-	_ "backend-ventas/api/models"
 )
 
 // ListarProductosConInventario obtiene la página de productos
