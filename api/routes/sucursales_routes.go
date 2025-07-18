@@ -3,7 +3,6 @@ package routes
 import (
 	"backend-ventas/api/database"
 	"backend-ventas/api/handlers"
-
 	"github.com/gin-gonic/gin"
 )
 

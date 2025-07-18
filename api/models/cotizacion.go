@@ -78,9 +78,10 @@ func (PaymentIntent) TableName() string { return "payment_intent" }
 /* ───────────────────────────────  PRODUCTO – PK = SKU  ─────────────────────────────── */
 
 type Producto struct {
-	SKU    string  `gorm:"primaryKey;column:sku" json:"sku"`
-	Nombre string  `json:"nombre"`
-	Precio float64 `json:"precio"`
+	SKU         string  `gorm:"primaryKey;column:sku" json:"sku"`
+	Nombre      string  `json:"nombre"`
+	Descripcion string  `json:"descripcion"`
+	Precio      float64 `json:"precio"`
 	// …otros campos…
 }
 
