@@ -12,6 +12,7 @@ type Cliente struct {
 	RazonSocial *string   `gorm:"column:razon_social" json:"razon_social"`
 	Rut         string    `gorm:"primaryKey;uniqueIndex:uni_clientes_rut;not null" json:"rut"`
 	TipoID      uint      `gorm:"column:tipo_id;not null" json:"tipo_id"`
+	Giro 		string	  `json:"giro"`
 	//CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
 	//UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 

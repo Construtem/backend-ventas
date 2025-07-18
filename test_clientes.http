@@ -1,6 +1,9 @@
 ### 🟢 GET - Obtener todos los clientes
 GET http://localhost:8080/api/clientes
 
+### 🟢 GET - Obtener cliente por rut
+GET http://localhost:8080/api/clienteUnico/11111111-1
+
 
 ### 🟢 POST - Crear nuevo cliente
 POST http://localhost:8080/api/clientes
@@ -11,22 +14,22 @@ Content-Type: application/json
   "telefono": "+569123456789",
   "email": "jere.2@example.com",
   "razon_social": "",
-  "rut": "19658977-5",
+  "rut": "20667647-7",
   "tipo_id": 2
 }
 
 
 ### 🟡 PATCH - Actualizar cliente con RUT
 ### Para conservar los mismos datos poner ""
-PATCH http://localhost:8080/api/clientes/19658977-5
+PATCH http://localhost:8080/api/clientes/20667647-7
 Content-Type: application/json
 
 {
-  "telefono": "+569123456781"
+  "telefono": "+569987654321"
 }
 
 ### 🟡 DELETE - Borrar cliente con RUT
-DELETE http://localhost:8080/api/clientes/19658977-5
+DELETE http://localhost:8080/api/clientes/20667647-7
 
 
 

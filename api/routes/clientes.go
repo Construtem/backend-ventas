@@ -13,6 +13,7 @@ import (
 
 func ClienteRoutes(r *gin.Engine) {
 	r.GET("api/clientes", obtenerClientes)
+	r.GET("api/clienteUnico/:rut", obtenerClientesPorRut)
 	r.GET("api/clientes/:id/direcciones", obtenerDireccionesCliente)
 	r.POST("api/clientes", crearCliente)
 	r.POST("api/nuevaDireccion", crearDireccionesCliente)  //21277429-4
@@ -23,7 +24,7 @@ func ClienteRoutes(r *gin.Engine) {
 
 //			### CLIENTES ###
 
-// FUNCION OBTENER DATOS //
+// FUNCION OBTENER TODOS LOS CLIENTES//
 func obtenerClientes(c *gin.Context) {
 	var clientes []models.Cliente
 	if err := database.DB.Find(&clientes).Error; err != nil {
@@ -33,6 +34,19 @@ func obtenerClientes(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, clientes)
+}
+
+// FUNCION OBTENER CLIENTE POR RUT //
+func obtenerClientesPorRut(c *gin.Context) {
+	rut_cliente := c.Param("rut")
+	var cliente []models.Cliente
+
+	if err := database.DB.Where("rut = ?", rut_cliente).First(&cliente).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Cliente no encontrado"})
+		fmt.Print("\n\t\t<<<< CLIENTE NO ENCONTRADO >>>>\n")
+		return
+	}
+	c.JSON(http.StatusOK, cliente)
 }
 
 // FUNCION CREAR CLIENTE //
