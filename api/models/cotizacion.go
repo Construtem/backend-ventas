@@ -14,7 +14,7 @@ type Cotizacion struct {
 	TipoDespacho string    `gorm:"column:tipo_despacho;not null"                     json:"tipo_despacho"`
 	Total        *float64  `json:"total,omitempty"`
 	Descripcion  *string   `json:"descripcion,omitempty" binding:"max=1000"`
-	EstadoPago   string    `gorm:"column:estado_pago" json:"estado_pago"`
+	EstadoPago   string    `gorm:"column:estado_pago;default:pendiente" json:"estado_pago"`
 
 	Cliente           *Cliente           `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`
 	Usuario           *Usuario           `gorm:"foreignKey:UserID"                    json:"usuario,omitempty"`

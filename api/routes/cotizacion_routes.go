@@ -4,6 +4,7 @@ import (
 	"backend-ventas/api/database"
 	"backend-ventas/api/handlers"
 	"backend-ventas/api/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,5 +26,7 @@ func CotizacionRoutes(r *gin.Engine) {
 		cotizaciones.GET(":id/items/simple", handlers.ObtenerItemsSimplesCotizacion(database.DB)) //devuelve null
 		cotizaciones.DELETE(":id/items/:producto_id/:sucursal_id", handlers.EliminarItemCotizacion(database.DB))
 		cotizaciones.GET("/checkout/:id", handlers.ObtenerCotizacionCheckout(database.DB))
+		cotizaciones.GET("/status/:id", handlers.ObtenerEstadoPagoCotizacion(database.DB))
+		cotizaciones.PATCH("/status/:id", handlers.ActualizarEstadoPagoCotizacion(database.DB))
 	}
 }

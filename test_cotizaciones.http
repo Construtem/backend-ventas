@@ -18,7 +18,7 @@ GET {{baseUrl}}/api/cotizaciones/completas
 ### ============================= FUNCIONA
 ### GET /cotizaciones/completa/{id}
 ### Obtener cotización completa por ID
-GET {{baseUrl}}/api/cotizaciones/completa/6
+GET {{baseUrl}}/api/cotizaciones/completa/1
 
 ### ============================= FUNCIONA
 ### POST /cotizaciones
@@ -317,6 +317,21 @@ Content-Type: application/json
 {
   "estado": "pendiente"
 }
+
+### =============================
+### PATCH /cotizaciones/status/{id}
+### Actualizar el estado de pago de una cotización (id=1)
+PATCH {{baseUrl}}/api/cotizaciones/status/1
+Content-Type: application/json
+
+{
+  "estado_pago": "pagado"
+}
+
+### =============================
+### GET /cotizaciones/status/{id}
+### Obtiene el estado de pago de una cotización (id=1)
+GET {{baseUrl}}/api/cotizaciones/status/3
 
 ### =============================
 ### NOTAS IMPORTANTES
