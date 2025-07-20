@@ -5,18 +5,16 @@ import "time"
 /* ─────────────────────────────────────────────  COTIZACIÓN  ───────────────────────────────────────────── */
 
 type Cotizacion struct {
-	ID           int         `gorm:"primaryKey"                                        json:"id"`
-	FechaCrea    time.Time   `gorm:"column:fecha_crea;default:CURRENT_TIMESTAMP"       json:"fecha_crea"`
-	Estado       string      `gorm:"not null"                                          json:"estado"`
-	CostoEnvio   float64     `gorm:"column:costo_envio;not null"                       json:"costo_envio"`
-	RutCliente   string      `gorm:"column:rut_cliente;not null"                       json:"rut_cliente"`
-	UserID       string      `gorm:"column:user_id;not null"                           json:"user_id"`
-	DireccionID  *int        `json:"direccion_id"`
-	Direccion    *DirCliente `gorm:"foreignKey:DireccionID" json:"direccion"`
-	TipoDespacho string      `gorm:"column:tipo_despacho;not null"                     json:"tipo_despacho"`
-	Total        *float64    `json:"total,omitempty"`
-	Descripcion  *string     `json:"descripcion,omitempty" binding:"max=1000"`
-	EstadoPago   string      `gorm:"column:estado_pago;default:pendiente" json:"estado_pago"`
+	ID           int       `gorm:"primaryKey"                                        json:"id"`
+	FechaCrea    time.Time `gorm:"column:fecha_crea;default:CURRENT_TIMESTAMP"       json:"fecha_crea"`
+	Estado       string    `gorm:"not null"                                          json:"estado"`
+	CostoEnvio   float64   `gorm:"column:costo_envio;not null"                       json:"costo_envio"`
+	RutCliente   string    `gorm:"column:rut_cliente;not null"                       json:"rut_cliente"`
+	UserID       string    `gorm:"column:user_id;not null"                           json:"user_id"`
+	TipoDespacho string    `gorm:"column:tipo_despacho;not null"                     json:"tipo_despacho"`
+	Total        *float64  `json:"total,omitempty"`
+	Descripcion  *string   `json:"descripcion,omitempty" binding:"max=1000"`
+	EstadoPago   string    `gorm:"column:estado_pago;default:pendiente" json:"estado_pago"`
 
 	Cliente           *Cliente           `gorm:"foreignKey:RutCliente;references:Rut" json:"cliente,omitempty"`
 	Usuario           *Usuario           `gorm:"foreignKey:UserID"                    json:"usuario,omitempty"`
