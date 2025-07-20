@@ -57,11 +57,12 @@ func ObtenerItemsCompletosCotizacion(id int) ([]models.CotizacionItem, error) {
 }
 
 // Métodos para crear cotizaciones
-func CrearCotizacion(rutCliente, userID, tipoDespacho string, descripcion *string, costoEnvio float64) (models.Cotizacion, error) {
+func CrearCotizacion(rutCliente, userID, tipoDespacho string, descripcion *string, costoEnvio float64, total *float64) (models.Cotizacion, error) {
 	cotizacion := models.Cotizacion{
 		RutCliente:   rutCliente,
 		UserID:       userID,
 		TipoDespacho: tipoDespacho,
+		Total:        total,
 		CostoEnvio:   costoEnvio,
 		Descripcion:  descripcion,
 		Estado:       "pendiente",

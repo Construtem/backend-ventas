@@ -37,11 +37,12 @@ POST {{baseUrl}}/api/cotizaciones
 Content-Type: application/json
 
 {
-  "rut_cliente": "20667647-7",
+  "rut_cliente": "20474207-3",
   "user_id": "galucema@utem.cl",
   "tipo_despacho": "a domicilio",
-  "costo_envio": 10000.00,
-  "descripcion": "Prueba de cotización para cliente"
+  "costo_envio": 0,
+  "descripcion": "Prueba de cotización para cliente",
+  "total": 150000
 }
 
 ### =============================

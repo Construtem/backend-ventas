@@ -412,7 +412,7 @@ func CrearCotizacion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		cot, err := controllers.CrearCotizacion(req.RutCliente, req.UserID, req.TipoDespacho, req.Descripcion, req.CostoEnvio)
+		cot, err := controllers.CrearCotizacion(req.RutCliente, req.UserID, req.TipoDespacho, req.Descripcion, req.CostoEnvio, req.Total)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear cotización"})
 			return

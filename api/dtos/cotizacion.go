@@ -7,11 +7,12 @@ import (
 
 // DTOs para crear cotización
 type CreateCotizacionRequest struct {
-	RutCliente   string  `json:"rut_cliente" binding:"required"`
-	UserID       string  `json:"user_id" binding:"required"`
-	TipoDespacho string  `json:"tipo_despacho"`
-	CostoEnvio   float64 `json:"costo_envio"`
-	Descripcion  *string `json:"descripcion"`
+	RutCliente   string   `json:"rut_cliente" binding:"required"`
+	UserID       string   `json:"user_id" binding:"required"`
+	Total        *float64 `json:"total"` // Puede ser nulo si no se calcula al crear
+	TipoDespacho string   `json:"tipo_despacho"`
+	CostoEnvio   float64  `json:"costo_envio"`
+	Descripcion  *string  `json:"descripcion"`
 }
 
 type CreateCotizacionResponse struct {
