@@ -39,7 +39,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	router.POST("/auth/verify", handlers.VerifyToken)
+	router.POST("/auth/verify", handlers.VerifyToken(database.GetDB())) // Ruta para verificar el token de Firebase
 
 	// Configurar todas las rutas usando SetupRoutes
 	apiRoutes.SetupRoutes(router)
