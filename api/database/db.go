@@ -1,8 +1,6 @@
 package database
 
 import (
-	"backend-ventas/api/models"
-
 	"fmt"
 	"log"
 	"os"
@@ -53,14 +51,14 @@ func InitDB() {
 
 	log.Println("Conexión a la base de datos establecida exitosamente.")
 
-	migrationErr := DB.AutoMigrate(&models.Usuario{})
+	//migrationErr := DB.AutoMigrate(&models.Usuario{})
 
-	if migrationErr != nil {
-		log.Fatalf("Fallo la automigración de la base de datos: %v", migrationErr)
-	}
+	//	if migrationErr != nil {
+	//		log.Fatalf("Fallo la automigración de la base de datos: %v", migrationErr)
+	//	}
 }
 
-// CloseDB cierra la conexión a la base de datos subyacente de GORM
+// CloseDB cierra la conexión a la base de datos subyacente de GORM para firebase
 func CloseDB() {
 	if DB != nil {
 		sqlDB, err := DB.DB()
@@ -71,4 +69,12 @@ func CloseDB() {
 			log.Println("Conexión a PostgreSQL (GORM) cerrada.")
 		}
 	}
+}
+
+// GetDB devuelve la instancia de la base de datos GORM
+func GetDB() *gorm.DB {
+	if DB == nil {
+		log.Fatal("Error: La conexión a la base de datos no está inicializada.")
+	}
+	return DB
 }
