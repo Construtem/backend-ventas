@@ -747,6 +747,22 @@ func ObtenerEstadoPagoCotizacion(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, res)
 	}
 }
+func EliminarCotizacion(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de cotización inválido"})
+			return
+		}
+
+		if err := controllers.EliminarCotizacionPorID(id); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar cotización"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"mensaje": "Cotización eliminada correctamente"})
+	}
+}
 
 func TestObtenerDespachoDestinoCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {

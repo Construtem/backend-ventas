@@ -318,3 +318,6 @@ func ObtenerDespachoDestinoCotizacion(id int) (*models.DirCliente, error) {
 
 	return despacho.DestinoObj, err
 }
+func EliminarCotizacionPorID(id string) error {
+	return database.DB.Delete(&models.Cotizacion{}, id).Error
+}

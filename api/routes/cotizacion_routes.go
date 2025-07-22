@@ -30,5 +30,6 @@ func CotizacionRoutes(r *gin.Engine) {
 		cotizaciones.PATCH("/status/:id", handlers.ActualizarEstadoPagoCotizacion(database.DB))
 		cotizaciones.GET("/cliente/:rut/historial", handlers.ObtenerHistorialCotizaciones(database.DB)) //Devuelve todas las cotizaciones de un cliente por su rut
 		cotizaciones.GET("/despacho", handlers.TestObtenerDespachoDestinoCotizacion(database.DB))
+		cotizaciones.DELETE("/:id", handlers.EliminarCotizacion(database.DB))
 	}
 }
