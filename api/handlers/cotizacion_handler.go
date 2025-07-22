@@ -755,7 +755,13 @@ func EliminarCotizacion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := controllers.EliminarCotizacionPorID(id); err != nil {
+		err := controllers.EliminarCotizacionPorID(id)
+		if err != nil {
+			// Detectar si el error es por estado no rechazado
+			if err.Error() == "solo se pueden eliminar cotizaciones rechazadas" {
+				c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar cotización"})
 			return
 		}

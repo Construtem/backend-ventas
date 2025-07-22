@@ -6,6 +6,7 @@ import (
 	"backend-ventas/api/mappers"
 	"backend-ventas/api/models"
 	"fmt"
+	"gorm.io/gorm"
 	"log"
 	"math"
 	"time"
@@ -319,5 +320,26 @@ func ObtenerDespachoDestinoCotizacion(id int) (*models.DirCliente, error) {
 	return despacho.DestinoObj, err
 }
 func EliminarCotizacionPorID(id string) error {
-	return database.DB.Delete(&models.Cotizacion{}, id).Error
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		var cot models.Cotizacion
+		if err := tx.First(&cot, id).Error; err != nil {
+			return err
+		}
+
+		if cot.Estado != "rechazada" {
+			return fmt.Errorf("solo se pueden eliminar cotizaciones rechazadas")
+		}
+
+		// Eliminar ítems asociados
+		if err := tx.Where("cotizacion_id = ?", id).Delete(&models.CotizacionItem{}).Error; err != nil {
+			return err
+		}
+
+		// Eliminar la cotización
+		if err := tx.Delete(&cot).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
