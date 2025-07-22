@@ -10,7 +10,6 @@ import (
 
 	"backend-ventas/api/controllers"
 	"backend-ventas/api/dtos"
-	"backend-ventas/api/mappers"
 	"backend-ventas/api/models"
 
 	"github.com/gin-gonic/gin"
@@ -669,14 +668,6 @@ func ObtenerHistorialCotizaciones(db *gorm.DB) gin.HandlerFunc {
 			}
 			totalPrecio += cot.CostoEnvio
 
-			// Buscar el despacho de la cotización asociada
-			direccionObj, err := controllers.ObtenerDespachoDestinoCotizacion(cot.ID)
-			var direccionDTO *dtos.DireccionCliente
-			if err == nil && direccionObj != nil {
-				dir := mappers.DirClienteToDTO(direccionObj)
-				direccionDTO = &dir
-			}
-
 			cr := dtos.CotizacionResponse{
 				ID:           cot.ID,
 				FechaCrea:    cot.FechaCrea,
@@ -686,7 +677,6 @@ func ObtenerHistorialCotizaciones(db *gorm.DB) gin.HandlerFunc {
 				RutCliente:   cot.RutCliente,
 				UserID:       cot.UserID,
 				TipoDespacho: cot.TipoDespacho,
-				Direccion:    direccionDTO,
 				Total:        cot.Total,
 				Descripcion:  cot.Descripcion,
 				Cliente:      cot.Cliente,
@@ -770,6 +760,7 @@ func EliminarCotizacion(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+/*
 func TestObtenerDespachoDestinoCotizacion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var dirCliente *models.DirCliente
@@ -780,3 +771,4 @@ func TestObtenerDespachoDestinoCotizacion(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, dirCliente)
 	}
 }
+*/
