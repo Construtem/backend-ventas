@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"backend-ventas/api/models"
+	modelos "backend-ventas/api/models"
 	"backend-ventas/services"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +36,7 @@ func VerifyToken(db *gorm.DB) gin.HandlerFunc {
 		uid := token.Claims["user_id"].(string)
 		picture := token.Claims["picture"].(string)
 
-		var usuario models.Usuario
+		var usuario modelos.Usuario
 		if err := db.Preload("Rol").Where("email = ?", email).First(&usuario).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Usuario no registrado en el sistema"})
 			return
