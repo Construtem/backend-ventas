@@ -275,6 +275,109 @@ func ObtenerCotizacionCheckout(id int) (*dtos.CheckoutCotizacionResponse, error)
 	return resp, nil
 }
 
+func ObtenerTodasLasCotizacionesCheckout() ([]*dtos.CheckoutCotizacionResponse, error) {
+	var cotizaciones []models.Cotizacion
+	err := database.DB.
+		Preload("Cliente.Direcciones").
+		Preload("Usuario").
+		Preload("Items.Producto").
+		Preload("Items.Sucursal").
+		Preload("PreviewCotizacion").
+		Find(&cotizaciones).Error
+	if err != nil {
+		return nil, err
+	}
+
+	respuestas := make([]*dtos.CheckoutCotizacionResponse, 0, len(cotizaciones))
+
+	for _, cot := range cotizaciones {
+		type row struct{ Descuento float64 }
+		descs := make(map[string]int)
+
+		for _, it := range cot.Items {
+			var r row
+			key := fmt.Sprintf("%s|%d", it.ProductoID, it.SucursalID)
+
+			if err := database.DB.Raw(`
+				SELECT COALESCE(descuento,0) AS descuento
+				FROM stock_sucursal
+				WHERE sku = ? AND sucursal_id = ?`,
+				it.ProductoID, it.SucursalID).
+				Scan(&r).Error; err != nil {
+				continue
+			}
+
+			pct := int(math.Round(r.Descuento))
+			if pct < 0 {
+				pct = 0
+			}
+			descs[key] = pct
+		}
+
+		var subtotal, descuentoTotal float64
+		itemsDTO := make([]dtos.CheckoutItemDTO, 0, len(cot.Items))
+
+		for _, it := range cot.Items {
+			if it.Producto == nil || it.Sucursal == nil {
+				continue
+			}
+			key := fmt.Sprintf("%s|%d", it.ProductoID, it.SucursalID)
+			pctDesc := descs[key]
+			precio := it.Producto.Precio
+			sub := float64(it.Cantidad) * precio
+			ahorro := sub * float64(pctDesc) / 100.0
+
+			subtotal += sub
+			descuentoTotal += ahorro
+
+			itemsDTO = append(itemsDTO, dtos.CheckoutItemDTO{
+				SKU:        it.Producto.SKU,
+				Nombre:     it.Producto.Nombre,
+				Cantidad:   it.Cantidad,
+				PrecioUnit: precio,
+				Subtotal:   sub,
+				Descuento:  pctDesc,
+				Sucursal:   it.Sucursal.Nombre,
+			})
+		}
+
+		subtotalConDesc := subtotal - descuentoTotal
+		base := subtotalConDesc + cot.CostoEnvio
+		iva := base * 0.19
+		total := base + iva
+
+		dirDTO := dtos.DireccionCliente{}
+		if len(cot.Cliente.Direcciones) > 0 {
+			dirDTO = mappers.DirClienteToDTO(&cot.Cliente.Direcciones[0])
+		}
+
+		dto := &dtos.CheckoutCotizacionResponse{
+			ID:             cot.ID,
+			FechaCrea:      cot.FechaCrea.Format("2006-01-02 15:04:05"),
+			Estado:         cot.Estado,
+			TipoDespacho:   cot.TipoDespacho,
+			EstadoPago:     cot.EstadoPago,
+			Cliente:        mappers.ClienteToDTO(cot.Cliente),
+			Usuario:        mappers.UsuarioToDTO(cot.Usuario),
+			Direccion:      dirDTO,
+			Items:          itemsDTO,
+			CostoEnvio:     cot.CostoEnvio,
+			SubtotalNeto:   subtotal,
+			DescuentoTotal: descuentoTotal,
+			IVA:            iva,
+			Total:          total,
+		}
+
+		if cot.PreviewCotizacion != nil {
+			dto.PreviewID = &cot.PreviewCotizacion.ID
+		}
+
+		respuestas = append(respuestas, dto)
+	}
+
+	return respuestas, nil
+}
+
 // ListarCotizacionesPorCliente devuelve TODAS las cotizaciones de un RUT
 func ListarCotizacionesPorCliente(rut string) ([]models.Cotizacion, error) {
 	var cots []models.Cotizacion

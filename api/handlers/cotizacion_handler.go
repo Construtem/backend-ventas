@@ -640,6 +640,16 @@ func ObtenerCotizacionCheckout(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, dto)
 	}
 }
+func ListarCotizacionesCheckout(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		dtos, err := controllers.ObtenerTodasLasCotizacionesCheckout()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener cotizaciones"})
+			return
+		}
+		c.JSON(http.StatusOK, dtos)
+	}
+}
 
 func ObtenerHistorialCotizaciones(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
